@@ -1,0 +1,2696 @@
+Directory: components
+
+File:   AnalysisAnimation.tsx
+
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+
+interface Props {
+  isAnalyzing: boolean;
+  domain: string;
+}
+
+const AnalysisAnimation: React.FC<Props> = ({ isAnalyzing, domain }) => {
+  const [currentStepIndex, setCurrentStepIndex] = useState(0);
+  const steps = [
+    'Starting analysis...',
+    `Analyzing URL: ${domain}`,
+    'Processing start',
+    'Fetching page content...',
+    'Analyzing with AI...',
+  ];
+
+  useEffect(() => {
+    if (isAnalyzing) {
+      const interval = setInterval(() => {
+        setCurrentStepIndex((prevIndex) => {
+          if (prevIndex < steps.length - 1) {
+            return prevIndex + 1;
+          } else {
+            clearInterval(interval);
+            return prevIndex;
+          }
+        });
+      }, 2000); // Change step every 2 seconds
+
+      return () => clearInterval(interval);
+    } else {
+      setCurrentStepIndex(0);
+    }
+  }, [isAnalyzing, steps.length]);
+
+  if (!isAnalyzing) return null;
+
+  return (
+    <motion.div
+      className="fixed inset-0 bg-primary bg-opacity-90 flex items-center justify-center z-50"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+    >
+      <div className="text-card text-2xl font-bold max-w-md w-full px-4 text-center">
+        <AnimatePresence mode="wait">
+          <motion.p
+            key={currentStepIndex}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.5 }}
+            className="mb-4 h-16 flex items-center justify-center"
+          >
+            {steps[currentStepIndex]}
+          </motion.p>
+        </AnimatePresence>
+        <motion.div 
+          className="bg-card h-2 rounded-full overflow-hidden"
+          initial={{ width: 0 }}
+          animate={{ width: "100%" }}
+          transition={{ duration: 15, ease: "linear", repeat: Infinity }}
+        />
+        <p className="text-sm mt-2">This may take a few moments...</p>
+      </div>
+    </motion.div>
+  );
+};
+
+export default AnalysisAnimation;
+----------------------------------------
+
+File:   AnalysisForm.tsx
+
+import React, { useState } from 'react';
+import { motion } from 'framer-motion';
+interface Props {
+  onSubmit: (domain: string) => Promise<void>;
+  isLoading: boolean;
+}
+export default function AnalysisForm({ onSubmit, isLoading }: Props) {
+  const [domain, setDomain] = useState('');
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (domain) {
+      await onSubmit(domain);
+    }
+  };
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <label htmlFor="domain" className="block text-sm font-medium text-text mb-1">
+          Website URL
+        </label>
+        <input
+          type="text"
+          id="domain"
+          value={domain}
+          onChange={(e) => setDomain(e.target.value)}
+          placeholder="Enter domain name"
+          className="w-full p-2 border border-secondary rounded-md focus:ring-2 focus:ring-primary focus:border-transparent bg-card text-text"
+          required
+        />
+      </div>
+      <motion.button
+        type="submit"
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        transition={{
+          type: "spring",
+          stiffness: 400,
+          damping: 30,
+          mass: 0.5,
+          duration: 0.3
+        }}
+        className="w-full px-4 py-2 bg-secondary text-white rounded-md transition-colors duration-300 disabled:bg-accent disabled:cursor-not-allowed"
+        disabled={isLoading}
+      >
+        {isLoading ? 'Analyzing...' : 'Analyze'}
+      </motion.button>
+    </form>
+  );
+}
+----------------------------------------
+
+File:   AnalysisLogs.tsx
+
+// File: /components/AnalysisLogs.tsx
+
+import React from 'react';
+
+interface Props {
+  logs: string[];
+}
+
+export default function AnalysisLogs({ logs }: Props) {
+  return (
+    <div className="bg-oatmeal p-4 rounded-lg shadow-md">
+      <h3 className="text-lg font-semibold mb-2 text-slate">Analysis Logs</h3>
+      <div className="bg-sea p-2 rounded">
+        {logs.map((log, index) => (
+          <p key={index} className="text-sm text-slate mb-1">
+            {log}
+          </p>
+        ))}
+      </div>
+    </div>
+  );
+}
+----------------------------------------
+
+File:   AnalysisResult.tsx
+
+// File: /components/AnalysisResult.tsx
+
+import React from 'react';
+import { motion } from 'framer-motion';
+import { AnalysisData, AnalysisAspect } from '../types';
+
+interface Props {
+  analysis: AnalysisData;
+}
+
+const categories = {
+  'Design & Performance': ['Design', 'Performance'],
+  'User Experience': ['User Experience (UX)', 'Mobile responsiveness'],
+  'Content & Copy': ['Copy', 'SEO - Content quality'],
+  'Technical SEO': ['SEO - On-page optimization', 'SEO - Technical aspects'],
+  'Trust & Conversion': ['Trust and Credibility', 'Call to Action (CTA)'],
+};
+
+export default function AnalysisResult({ analysis }: Props) {
+  return (
+    <div className="space-y-8">
+      {Object.entries(categories).map(([category, aspects], index) => (
+        <motion.div
+          key={category}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: index * 0.1 }}
+          className="bg-oatmeal rounded-lg shadow-md overflow-hidden"
+        >
+          <h2 className="text-xl font-semibold p-4 bg-slate text-oatmeal">{category}</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6">
+            {aspects.map((aspect) => (
+              <AspectCard key={aspect} title={aspect} aspect={analysis[aspect]} />
+            ))}
+          </div>
+        </motion.div>
+      ))}
+    </div>
+  );
+}
+
+function AspectCard({ title, aspect }: { title: string; aspect: AnalysisAspect | undefined }) {
+  if (!aspect || (aspect.strengths.length === 0 && aspect.weaknesses.length === 0 && aspect.recommendations.length === 0)) {
+    return (
+      <div className="bg-sea rounded-lg shadow-sm overflow-hidden">
+        <h3 className="text-lg font-semibold p-3 bg-slate text-oatmeal">{title}</h3>
+        <p className="p-3 text-sm text-slate">No data available for this aspect.</p>
+      </div>
+    );
+  }
+
+  return (
+    <motion.div
+      whileHover={{ scale: 1.02 }}
+      className="bg-sea rounded-lg shadow-sm overflow-hidden transition-all duration-300"
+    >
+      <h3 className="text-lg font-semibold p-3 bg-slate text-oatmeal">{title}</h3>
+      <div className="p-3 space-y-3">
+        <AspectSection title="Strengths" items={aspect.strengths} />
+        <AspectSection title="Weaknesses" items={aspect.weaknesses} />
+        <AspectSection title="Recommendations" items={aspect.recommendations} />
+      </div>
+    </motion.div>
+  );
+}
+
+function AspectSection({ title, items }: { title: string; items: string[] }) {
+  if (items.length === 0) return null;
+
+  return (
+    <div>
+      <h4 className="font-medium text-slate text-sm uppercase tracking-wide mb-1">{title}</h4>
+      <ul className="list-disc list-inside text-sm text-slate space-y-1">
+        {items.map((item, index) => (
+          <li key={index}>{item}</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+----------------------------------------
+
+File:   Chatbot.tsx
+
+import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import ReactMarkdown from 'react-markdown';
+
+interface Message {
+  text: string;
+  isUser: boolean;
+}
+
+interface Props {
+  websiteContent: string;
+  onClose: () => void;
+}
+
+export default function Chatbot({ websiteContent, onClose }: Props) {
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [streamingMessage, setStreamingMessage] = useState('');
+  const chatEndRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, streamingMessage]);
+
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    }
+  }, [input]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!input.trim()) return;
+    const userMessage = { text: input, isUser: true };
+    setMessages(prev => [...prev, userMessage]);
+    setInput('');
+    setIsLoading(true);
+    setStreamingMessage('');
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: input, websiteContent }),
+      });
+      if (!response.ok) throw new Error('Failed to get response');
+      const reader = response.body?.getReader();
+      if (!reader) throw new Error('No reader available');
+      let fullMessage = '';
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const text = new TextDecoder().decode(value);
+        fullMessage += text;
+        setStreamingMessage(fullMessage);
+      }
+      setMessages(prev => [...prev, { text: fullMessage, isUser: false }]);
+    } catch (error) {
+      console.error('Error:', error);
+      setMessages(prev => [...prev, { text: 'Sorry, an error occurred. Please try again.', isUser: false }]);
+    } finally {
+      setIsLoading(false);
+      setStreamingMessage('');
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit(e as unknown as React.FormEvent);
+    }
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 20 }}
+      className="fixed bottom-4 right-4 w-96 h-[600px] bg-[#F0F4F8] rounded-lg shadow-lg flex flex-col"
+    >
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="flex justify-between items-center p-4 bg-[#B5A5D1] text-white rounded-t-lg"
+      >
+        <h2 className="text-xl font-bold">Chatbot</h2>
+        <motion.button
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          onClick={onClose}
+          className="text-2xl"
+        >
+          &times;
+        </motion.button>
+      </motion.div>
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        <AnimatePresence>
+          {messages.map((message, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -50 }}
+              className={`${
+                message.isUser ? 'ml-auto bg-[#3F4E82] text-white' : 'mr-auto bg-white text-black'
+              } rounded-lg p-3 max-w-[80%] shadow-md`}
+            >
+              <ReactMarkdown>{message.text}</ReactMarkdown>
+            </motion.div>
+          ))}
+          {streamingMessage && (
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mr-auto bg-white text-black rounded-lg p-3 max-w-[80%] shadow-md"
+            >
+              <ReactMarkdown>{streamingMessage}</ReactMarkdown>
+            </motion.div>
+          )}
+        </AnimatePresence>
+        <div ref={chatEndRef} />
+      </div>
+      <form onSubmit={handleSubmit} className="p-4 bg-[#B5A5D1]">
+        <textarea
+          ref={textareaRef}
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder="Type your message..."
+          className="w-full p-2 border rounded resize-none text-black bg-white focus:outline-none focus:ring-2 focus:ring-[#3F4E82]"
+          rows={1}
+        />
+        <motion.button
+          type="submit"
+          disabled={isLoading}
+          className="mt-2 w-full px-4 py-2 bg-[#3F4E82] text-white rounded hover:bg-[#2A3C6C] disabled:bg-gray-400 transition-colors"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          {isLoading ? 'Sending...' : 'Send'}
+        </motion.button>
+      </form>
+    </motion.div>
+  );
+}
+----------------------------------------
+
+File:   CopyAnalysis.tsx
+
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { CopyAnalysisData } from '../types';
+
+interface Props {
+  data: CopyAnalysisData;
+}
+
+const CopyAnalysis: React.FC<Props> = ({ data }) => {
+  const [selectedAnalysis, setSelectedAnalysis] = useState<string | null>(null);
+
+  const analysisOrder = [
+    'headingAndSubheading',
+    ...Object.keys(data).filter(key => 
+      key !== 'overallAnalysis' && 
+      key !== 'overallRecommendations' && 
+      key !== 'headingAnalysis' && 
+      key !== 'subheadingAnalysis'
+    )
+  ];
+
+  return (
+    <div className="space-y-8">
+      <h1 className="text-4xl font-bold mb-8 text-slate">Copy Analysis</h1>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
+        {analysisOrder.map((key) => {
+          let cardData;
+          let cardTitle;
+          if (key === 'headingAndSubheading') {
+            cardData = {
+              heading: data.headingAnalysis,
+              subheading: data.subheadingAnalysis
+            };
+            cardTitle = 'Heading and Subheading';
+          } else {
+            cardData = data[key];
+            cardTitle = formatTitle(key);
+          }
+          return (
+            <AnalysisCard
+              key={key}
+              title={cardTitle}
+              data={cardData}
+              onShowDetails={() => setSelectedAnalysis(key)}
+            />
+          );
+        })}
+      </div>
+
+      <AnimatePresence>
+        {selectedAnalysis && (
+          <AnalysisPopup
+            data={selectedAnalysis === 'headingAndSubheading' 
+              ? { heading: data.headingAnalysis, subheading: data.subheadingAnalysis }
+              : data[selectedAnalysis]}
+            title={selectedAnalysis === 'headingAndSubheading' 
+              ? 'Heading and Subheading'
+              : formatTitle(selectedAnalysis)}
+            onClose={() => setSelectedAnalysis(null)}
+          />
+        )}
+      </AnimatePresence>
+
+      <OverallAnalysis
+        overallAnalysis={data.overallAnalysis}
+        overallRecommendations={data.overallRecommendations}
+      />
+    </div>
+  );
+};
+
+const AnalysisCard: React.FC<{ title: string; data: any; onShowDetails: () => void }> = ({ title, data, onShowDetails }) => {
+  return (
+    <motion.div
+      className="bg-card p-6 rounded-lg shadow-md"
+      whileHover={{ y: -5, boxShadow: "0 4px 20px rgba(0,0,0,0.1)" }}
+      transition={{ type: 'spring', stiffness: 300, damping: 10 }}
+    >
+      <h3 className="text-xl font-semibold mb-4 text-primary">{title}</h3>
+      <motion.button
+        className="mt-4 bg-secondary text-white px-4 py-2 rounded-md hover:bg-primary transition-colors duration-300 w-full"
+        whileHover={{ scale: 1.03 }}
+        whileTap={{ scale: 0.98 }}
+        onClick={onShowDetails}
+      >
+        Show Details
+      </motion.button>
+    </motion.div>
+  );
+};
+
+const AnalysisPopup: React.FC<{ data: any; title: string; onClose: () => void }> = ({ data, title, onClose }) => {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 bg-text bg-opacity-50 flex items-center justify-center z-50"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.9, opacity: 0 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+        className="bg-card p-8 rounded-lg shadow-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto m-4"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h2 className="text-2xl font-bold mb-6 text-primary">{title}</h2>
+        {title === 'Heading and Subheading' ? (
+          <>
+            <HeadingAnalysis heading={data.heading} />
+            <SubheadingAnalysis subheading={data.subheading} />
+          </>
+        ) : (
+          Object.entries(data).map(([key, value]) => (
+            <div key={key} className="mb-4">
+              <h3 className="text-lg font-semibold text-accent">{formatTitle(key)}</h3>
+              {Array.isArray(value) ? (
+                <ul className="list-disc list-inside text-text">
+                  {value.map((item, index) => (
+                    <li key={index}>{item}</li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-text">{formatValue(value)}</p>
+              )}
+            </div>
+          ))
+        )}
+        <motion.button
+          className="mt-6 bg-secondary text-white px-4 py-2 rounded-md hover:bg-primary transition-colors duration-300"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={onClose}
+        >
+          Close
+        </motion.button>
+      </motion.div>
+    </motion.div>
+  );
+};
+
+const HeadingAnalysis: React.FC<{ heading: CopyAnalysisData['headingAnalysis'] }> = ({ heading }) => (
+  <div className="mb-6">
+    <h3 className="text-lg font-semibold mb-2 text-accent">Heading</h3>
+    <p className="font-medium mb-2 text-text">"{heading.text}"</p>
+    <p className="mb-2 text-text">{heading.analysis}</p>
+    <ul className="list-disc list-inside space-y-1 text-text">
+      <li>Clever: {heading.isClever ? 'Yes' : 'No'}</li>
+      <li>Addresses Pain Point: {heading.addressesPainPoint ? 'Yes' : 'No'}</li>
+      <li>Offers Solution: {heading.offersSolution ? 'Yes' : 'No'}</li>
+      <li>Copywriting Framework: {heading.copywritingFramework || 'None identified'}</li>
+      <li>Benefit-oriented: {heading.isBenefitOriented ? 'Yes' : 'No'}</li>
+      <li>Effectiveness: {heading.effectiveness}/10</li>
+    </ul>
+  </div>
+);
+
+const SubheadingAnalysis: React.FC<{ subheading: CopyAnalysisData['subheadingAnalysis'] }> = ({ subheading }) => (
+  <div>
+    <h3 className="text-lg font-semibold mb-2 text-accent">Subheading</h3>
+    <p className="font-medium mb-2 text-text">"{subheading.text}"</p>
+    <p className="mb-2 text-text">{subheading.analysis}</p>
+    <ul className="list-disc list-inside space-y-1 text-text">
+      <li>Supports Heading: {subheading.supportsHeading ? 'Yes' : 'No'}</li>
+      <li>Clarifies Value: {subheading.clarifiesValue ? 'Yes' : 'No'}</li>
+      <li>Effectiveness: {subheading.effectiveness}/10</li>
+    </ul>
+  </div>
+);
+
+const OverallAnalysis: React.FC<{ overallAnalysis: string; overallRecommendations: string[] }> = ({ overallAnalysis, overallRecommendations }) => (
+  <div className="bg-slate rounded-lg shadow-md overflow-hidden">
+    <h2 className="text-2xl font-semibold p-4 bg-umber text-oatmeal">Overall Analysis</h2>
+    <div className="p-6 space-y-4">
+      <p className="text-oatmeal">{overallAnalysis}</p>
+      <h3 className="text-xl font-semibold text-coral">Recommendations</h3>
+      <ul className="list-disc list-inside text-oatmeal">
+        {overallRecommendations.map((recommendation, index) => (
+          <li key={index} className="mb-2">{recommendation}</li>
+        ))}
+      </ul>
+    </div>
+  </div>
+);
+
+function formatTitle(key: string): string {
+  return key.split(/(?=[A-Z])/).join(' ');
+}
+
+function formatValue(value: any): string {
+  if (typeof value === 'boolean') {
+    return value ? 'Yes' : 'No';
+  }
+  return value.toString();
+}
+
+export default CopyAnalysis;
+----------------------------------------
+
+File:   ExpandableCard.tsx
+
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+
+interface Props {
+  title: string;
+  children: React.ReactNode;
+  isExpanded?: boolean;
+  onClick?: () => void;
+  isSmall?: boolean;
+}
+
+const ExpandableCard: React.FC<Props> = ({ title, children, isExpanded = false, onClick, isSmall = false }) => {
+  const [isOpen, setIsOpen] = useState(isExpanded);
+
+  const handleClick = () => {
+    if (onClick) {
+      onClick();
+    } else {
+      setIsOpen(!isOpen);
+    }
+  };
+
+  return (
+    <div className={`bg-white rounded-lg shadow-md overflow-hidden ${isSmall ? 'text-sm' : ''}`}>
+      <motion.button
+        className="w-full text-left p-4 flex justify-between items-center"
+        onClick={handleClick}
+      >
+        <span className={`font-semibold ${isSmall ? 'text-base' : 'text-lg'}`}>{title}</span>
+        <motion.span
+          animate={{ rotate: isOpen ? 180 : 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          ▼
+        </motion.span>
+      </motion.button>
+      <AnimatePresence>
+        {(isOpen || isExpanded) && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <div className="p-4 border-t">
+              {children}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
+export default ExpandableCard;
+----------------------------------------
+
+File:   Layout.tsx
+
+import React, { ReactNode } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/router';
+import { motion } from 'framer-motion';
+import PersistentChatBubble from './PersistentChatBubble';
+
+interface LayoutProps {
+  children: ReactNode;
+  websiteContent: string;
+}
+
+const Layout: React.FC<LayoutProps> = ({ children, websiteContent }) => {
+  const router = useRouter();
+
+  const navItems = [
+    { name: 'Dashboard', path: '/' },
+    { name: 'Trust & Conversion', path: '/trust-conversion' },
+    { name: 'Copy Analysis', path: '/copy-analysis' },
+    { name: 'SEO Analysis', path: '/seo-analysis' }, // New SEO Analysis page
+  ];
+
+  return (
+    <div className="flex h-screen bg-background">
+      <nav className="w-64 bg-card shadow-md p-6">
+        <h1 className="text-2xl font-bold mb-8 text-primary">CRO App</h1>
+        <ul>
+          {navItems.map((item) => (
+            <li key={item.path} className="mb-4">
+              <Link href={item.path}>
+                <motion.span
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className={`block p-2 rounded cursor-pointer ${
+                    router.pathname === item.path ? 'bg-secondary text-white' : 'hover:bg-background text-text'
+                  }`}
+                >
+                  {item.name}
+                </motion.span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </nav>
+      <main className="flex-1 overflow-y-auto p-8">
+        {children}
+      </main>
+      <PersistentChatBubble websiteContent={websiteContent} />
+    </div>
+  );
+};
+
+export default Layout;
+----------------------------------------
+
+File:   PageAnalysisDetail.tsx
+
+import React from 'react';
+import { PageAnalysisData } from '../types';
+import { motion } from 'framer-motion';
+
+interface Props {
+  page: PageAnalysisData;
+  onClose: () => void;
+}
+
+const PageAnalysisDetail: React.FC<Props> = ({ page, onClose }) => {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+    >
+      <motion.div
+        initial={{ y: 50, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        exit={{ y: 50, opacity: 0 }}
+        className="bg-white p-6 rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto"
+      >
+        <h2 className="text-2xl font-bold mb-4">{page.title}</h2>
+        <p className="mb-4">{page.url}</p>
+
+        <h3 className="text-xl font-semibold mb-2">On-Page Optimization</h3>
+        <ul className="list-disc list-inside mb-4">
+          <li>Title Tag: {page.titleTag}</li>
+          <li>Meta Description: {page.metaDescription}</li>
+          <li>H1: {page.h1}</li>
+          <li>Keyword Usage: {page.keywordUsage}</li>
+        </ul>
+
+        <h3 className="text-xl font-semibold mb-2">Content Analysis</h3>
+        <ul className="list-disc list-inside mb-4">
+          <li>Word Count: {page.wordCount}</li>
+          <li>Readability Score: {page.readabilityScore}</li>
+          <li>Content Quality: {page.contentQuality}</li>
+        </ul>
+
+        <h3 className="text-xl font-semibold mb-2">Technical Aspects</h3>
+        <ul className="list-disc list-inside mb-4">
+          <li>Load Time: {page.loadTime}</li>
+          <li>Mobile Friendly: {page.mobileFriendly ? 'Yes' : 'No'}</li>
+          <li>HTTPS: {page.https ? 'Yes' : 'No'}</li>
+        </ul>
+
+        <h3 className="text-xl font-semibold mb-2">Recommendations</h3>
+        <ul className="list-disc list-inside mb-4">
+          {page.recommendations.map((rec, index) => (
+            <li key={index}>{rec}</li>
+          ))}
+        </ul>
+
+        <button 
+          onClick={onClose}
+          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+        >
+          Close
+        </button>
+      </motion.div>
+    </motion.div>
+  );
+};
+
+export default PageAnalysisDetail;
+----------------------------------------
+
+File:   PageAnalysisTable.tsx
+
+import React from 'react';
+import { PageAnalysisData } from '../types';
+
+interface Props {
+  pages: PageAnalysisData[];
+  onSort: (column: string) => void;
+  sortColumn: string;
+  sortDirection: 'asc' | 'desc';
+  onSelectPage: (page: PageAnalysisData) => void;
+}
+
+const PageAnalysisTable: React.FC<Props> = ({ pages, onSort, sortColumn, sortDirection, onSelectPage }) => {
+  return (
+    <table className="w-full border-collapse">
+      <thead>
+        <tr className="bg-gray-200">
+          <th className="p-2 text-left cursor-pointer" onClick={() => onSort('url')}>
+            URL {sortColumn === 'url' && (sortDirection === 'asc' ? '▲' : '▼')}
+          </th>
+          <th className="p-2 text-left cursor-pointer" onClick={() => onSort('title')}>
+            Title {sortColumn === 'title' && (sortDirection === 'asc' ? '▲' : '▼')}
+          </th>
+          <th className="p-2 text-left cursor-pointer" onClick={() => onSort('seoScore')}>
+            SEO Score {sortColumn === 'seoScore' && (sortDirection === 'asc' ? '▲' : '▼')}
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        {pages.map((page, index) => (
+          <tr key={index} className="border-b hover:bg-gray-100 cursor-pointer" onClick={() => onSelectPage(page)}>
+            <td className="p-2">{page.url}</td>
+            <td className="p-2">{page.title}</td>
+            <td className="p-2">{page.seoScore}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+};
+
+export default PageAnalysisTable;
+----------------------------------------
+
+File:   PersistentChatBubble.tsx
+
+// File: /components/PersistentChatBubble.tsx
+
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import Chatbot from './Chatbot';
+
+interface Props {
+  websiteContent: string;
+}
+
+const PersistentChatBubble: React.FC<Props> = ({ websiteContent }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <>
+      <motion.div
+        className="fixed bottom-4 right-4 z-50"
+        initial={{ scale: 0 }}
+        animate={{ scale: 1 }}
+        transition={{ type: 'spring', stiffness: 260, damping: 20 }}
+      >
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="bg-coral text-slate w-16 h-16 rounded-full flex items-center justify-center shadow-lg hover:bg-umber transition-colors duration-300"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-8 h-8">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+          </svg>
+        </button>
+      </motion.div>
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 50 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            className="fixed bottom-24 right-4 z-40"
+          >
+            <Chatbot websiteContent={websiteContent} onClose={() => setIsOpen(false)} />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
+  );
+};
+
+export default PersistentChatBubble;
+----------------------------------------
+
+File:   SEOAnalysis.tsx
+
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { SEOAnalysisData } from '../types';
+import { ensureString } from '../utils/seoAnalyzer';
+
+interface Props {
+  data: SEOAnalysisData | null;
+}
+
+const SEOAnalysis: React.FC<Props> = ({ data }) => {
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedFactor, setSelectedFactor] = useState<string | null>(null);
+
+  const categories = [
+    { name: 'On-Page Optimization', key: 'onPageOptimization' },
+    { name: 'Technical SEO', key: 'technicalSEO' },
+    { name: 'Content Quality', key: 'contentQuality' },
+    { name: 'User Experience and Engagement', key: 'userExperienceAndEngagement' },
+    { name: 'Link Optimization', key: 'linkOptimization' },
+    { name: 'Advanced On-Page Techniques', key: 'advancedOnPageTechniques' },
+    { name: 'Technical Performance and Architecture', key: 'technicalPerformanceAndArchitecture' }
+  ];
+
+  if (!data) {
+    return <div className="text-center py-8">Loading SEO analysis data...</div>;
+  }
+
+  if ('error' in data) {
+    return <div className="text-center py-8 text-red-500">{data.error}</div>;
+  }
+
+  const safeSitemapContent = ensureString(data.sitemapContent);
+
+  const validateRecommendation = (recommendation: string): string => {
+    const lowercaseRecommendation = recommendation.toLowerCase();
+    const lowercaseSitemap = safeSitemapContent.toLowerCase();
+
+    if (lowercaseRecommendation.includes('add a blog') && lowercaseSitemap.includes('blog')) {
+      return recommendation + ' (Note: A blog already exists on the site)';
+    }
+    if (lowercaseRecommendation.includes('add a contact page') && lowercaseSitemap.includes('contact')) {
+      return recommendation + ' (Note: A contact page already exists on the site)';
+    }
+    if (lowercaseRecommendation.includes('add an about page') && lowercaseSitemap.includes('about')) {
+      return recommendation + ' (Note: An about page already exists on the site)';
+    }
+    if (lowercaseRecommendation.includes('create a sitemap') && lowercaseSitemap.includes('sitemap')) {
+      return recommendation + ' (Note: A sitemap already exists on the site)';
+    }
+    if (lowercaseRecommendation.includes('implement https') && lowercaseSitemap.includes('https://')) {
+      return recommendation + ' (Note: HTTPS is already implemented on the site)';
+    }
+
+    return recommendation;
+  };
+
+  return (
+    <div className="space-y-8">
+      <h1 className="text-4xl font-bold mb-8 text-slate">SEO Analysis</h1>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {categories.map((category) => (
+          <CategoryCard
+            key={category.key}
+            category={category}
+            isSelected={selectedCategory === category.key}
+            onClick={() => setSelectedCategory(category.key === selectedCategory ? null : category.key)}
+          />
+        ))}
+      </div>
+
+      <AnimatePresence>
+        {selectedCategory && (
+          <CategoryDetails
+            category={categories.find(c => c.key === selectedCategory)!}
+            data={data[selectedCategory]}
+            onShowDetails={setSelectedFactor}
+            validateRecommendation={validateRecommendation}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {selectedFactor && selectedCategory && (
+          <AnalysisPopup
+            data={data[selectedCategory][selectedFactor]}
+            title={formatTitle(selectedFactor)}
+            onClose={() => setSelectedFactor(null)}
+            validateRecommendation={validateRecommendation}
+          />
+        )}
+      </AnimatePresence>
+
+      <OverallAnalysis
+        overallAnalysis={ensureString(data.overallAnalysis)}
+        overallRecommendations={data.overallRecommendations || []}
+        validateRecommendation={validateRecommendation}
+      />
+    </div>
+  );
+};
+
+const CategoryCard: React.FC<{ category: any; isSelected: boolean; onClick: () => void }> = ({ category, isSelected, onClick }) => (
+  <motion.div
+    layout
+    className={`bg-white rounded-lg shadow-md overflow-hidden cursor-pointer ${
+      isSelected ? 'col-span-full' : ''
+    }`}
+    onClick={onClick}
+  >
+    <h2 className="text-xl font-semibold p-4 bg-primary text-white">{category.name}</h2>
+  </motion.div>
+);
+
+const CategoryDetails: React.FC<{ category: any; data: any; onShowDetails: (factor: string) => void; validateRecommendation: (recommendation: string) => string }> = 
+  ({ category, data, onShowDetails, validateRecommendation }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    exit={{ opacity: 0, y: 20 }}
+    className="mt-8"
+  >
+    <h3 className="text-2xl font-bold mb-4">{category.name}</h3>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {Object.entries(data || {}).map(([factor, factorData]) => (
+        <AnalysisCard
+          key={factor}
+          title={formatTitle(factor)}
+          data={factorData}
+          onShowDetails={() => onShowDetails(factor)}
+          validateRecommendation={validateRecommendation}
+        />
+      ))}
+    </div>
+  </motion.div>
+);
+
+const AnalysisCard: React.FC<{ title: string; data: any; onShowDetails: () => void; validateRecommendation: (recommendation: string) => string }> = 
+  ({ title, data, onShowDetails, validateRecommendation }) => (
+  <motion.div
+    className="bg-card p-6 rounded-lg shadow-md"
+    whileHover={{ y: -5, boxShadow: "0 4px 20px rgba(0,0,0,0.1)" }}
+    transition={{ type: 'spring', stiffness: 300, damping: 10 }}
+  >
+    <h3 className="text-xl font-semibold mb-4 text-primary">{title}</h3>
+    <p className="text-sm mb-4">{getAnalysisSummary(data, validateRecommendation)}</p>
+    <motion.button
+      className="mt-4 bg-secondary text-white px-4 py-2 rounded-md hover:bg-primary transition-colors duration-300 w-full"
+      whileHover={{ scale: 1.03 }}
+      whileTap={{ scale: 0.98 }}
+      onClick={onShowDetails}
+    >
+      Show Details
+    </motion.button>
+  </motion.div>
+);
+
+const AnalysisPopup: React.FC<{ data: any; title: string; onClose: () => void; validateRecommendation: (recommendation: string) => string }> = 
+  ({ data, title, onClose, validateRecommendation }) => (
+  <motion.div
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    exit={{ opacity: 0 }}
+    className="fixed inset-0 bg-text bg-opacity-50 flex items-center justify-center z-50"
+    onClick={onClose}
+  >
+    <motion.div
+      initial={{ scale: 0.9, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      exit={{ scale: 0.9, opacity: 0 }}
+      transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+      className="bg-card p-8 rounded-lg shadow-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto m-4"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <h2 className="text-2xl font-bold mb-6 text-primary">{title}</h2>
+      <FactorDetails data={data} validateRecommendation={validateRecommendation} />
+      <motion.button
+        className="mt-6 bg-secondary text-white px-4 py-2 rounded-md hover:bg-primary transition-colors duration-300"
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={onClose}
+      >
+        Close
+      </motion.button>
+    </motion.div>
+  </motion.div>
+);
+
+const FactorDetails: React.FC<{ data: any; validateRecommendation: (recommendation: string) => string }> = ({ data, validateRecommendation }) => (
+  <div className="space-y-4">
+    {Object.entries(data || {}).map(([key, value]) => (
+      <div key={key}>
+        <h4 className="font-semibold text-accent">{formatTitle(key)}:</h4>
+        {Array.isArray(value) ? (
+          <ul className="list-disc list-inside text-text">
+            {value.map((item, index) => (
+              <li key={index}>{validateRecommendation(ensureString(item))}</li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-text">{validateRecommendation(ensureString(value))}</p>
+        )}
+      </div>
+    ))}
+  </div>
+);
+
+const OverallAnalysis: React.FC<{ overallAnalysis: string; overallRecommendations: any[]; validateRecommendation: (recommendation: string) => string }> = 
+  ({ overallAnalysis, overallRecommendations, validateRecommendation }) => (
+  <div className="bg-slate rounded-lg shadow-md overflow-hidden mt-8">
+    <h2 className="text-2xl font-semibold p-4 bg-umber text-oatmeal">Overall Analysis</h2>
+    <div className="p-6 space-y-4">
+      <p className="text-oatmeal">{validateRecommendation(overallAnalysis)}</p>
+      <h3 className="text-xl font-semibold text-coral">Recommendations</h3>
+      <ul className="list-disc list-inside text-oatmeal">
+        {overallRecommendations.map((recommendation, index) => (
+          <li key={index} className="mb-2">
+            {validateRecommendation(ensureString(recommendation.recommendation))}
+            <span className="block text-sm text-coral">
+              Priority: {recommendation.priority} | Impact: {recommendation.impact} | Effort: {recommendation.effort}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+);
+
+const formatTitle = (key: string): string => key.split(/(?=[A-Z])/).join(' ');
+
+const getAnalysisSummary = (data: any, validateRecommendation: (recommendation: string) => string): string => {
+  if (!data || !data.analysis) {
+    return "No analysis available";
+  }
+  const summary = ensureString(data.analysis).split('.')[0] + '.';
+  const truncatedSummary = summary.length > 100 ? summary.slice(0, 97) + '...' : summary;
+  return `Score: ${data.score}/100. ${validateRecommendation(truncatedSummary)}`;
+};
+
+export default SEOAnalysis;
+----------------------------------------
+
+File:   TrustConversionAnalysis.tsx
+
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { TrustConversionData } from '../types';
+
+interface Props {
+  data: TrustConversionData;
+}
+
+const TrustConversionAnalysis: React.FC<Props> = ({ data }) => {
+  const [selectedAnalysis, setSelectedAnalysis] = useState<string | null>(null);
+
+  return (
+    <>
+      <h1 className="text-4xl font-bold mb-8 text-slate">Trust & Conversion Analysis</h1>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6 bg-background">
+        {Object.entries(data).map(([key, value]) => {
+          if (key !== 'overallAnalysis') {
+            return (
+              <AnalysisCard
+                key={key}
+                title={formatTitle(key)}
+                data={value}
+                onShowDetails={() => setSelectedAnalysis(key)}
+              />
+            );
+          }
+          return null;
+        })}
+      </div>
+      <AnimatePresence>
+        {selectedAnalysis && (
+          <AnalysisPopup
+            data={data[selectedAnalysis]}
+            title={formatTitle(selectedAnalysis)}
+            onClose={() => setSelectedAnalysis(null)}
+          />
+        )}
+      </AnimatePresence>
+    </>
+  );
+};
+
+const AnalysisCard: React.FC<{ title: string; data: any; onShowDetails: () => void }> = ({ title, data, onShowDetails }) => {
+  return (
+    <motion.div
+      className="bg-card p-6 rounded-lg shadow-md"
+      whileHover={{ y: -5, boxShadow: "0 4px 20px rgba(0,0,0,0.1)" }}
+      transition={{ type: 'spring', stiffness: 300, damping: 10 }}
+    >
+      <h3 className="text-xl font-semibold mb-4 text-primary">{title}</h3>
+      <motion.button
+        className="mt-4 bg-secondary text-white px-4 py-2 rounded-md hover:bg-primary transition-colors duration-300 w-full"
+        whileHover={{ scale: 1.03 }}
+        whileTap={{ scale: 0.98 }}
+        onClick={onShowDetails}
+      >
+        Show Details
+      </motion.button>
+    </motion.div>
+  );
+};
+
+const AnalysisPopup: React.FC<{ data: any; title: string; onClose: () => void }> = ({ data, title, onClose }) => {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 bg-text bg-opacity-50 flex items-center justify-center z-50"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.9, opacity: 0 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+        className="bg-card p-8 rounded-lg shadow-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto m-4"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h2 className="text-2xl font-bold mb-6 text-primary">{title}</h2>
+        {Object.entries(data).map(([key, value]) => (
+          <div key={key} className="mb-4">
+            <h3 className="text-lg font-semibold text-accent">{formatTitle(key)}</h3>
+            {key === 'recommendations' ? (
+              <ul className="list-disc list-inside text-text">
+                {value.map((item, index) => (
+                  <li key={index}>{item}</li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-text">{formatValue(value)}</p>
+            )}
+          </div>
+        ))}
+        <motion.button
+          className="mt-6 bg-secondary text-white px-4 py-2 rounded-md hover:bg-primary transition-colors duration-300"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={onClose}
+        >
+          Close
+        </motion.button>
+      </motion.div>
+    </motion.div>
+  );
+};
+
+function formatTitle(key: string): string {
+  return key.split(/(?=[A-Z])/).join(' ');
+}
+
+function formatValue(value: any): string {
+  if (typeof value === 'boolean') {
+    return value ? 'Yes' : 'No';
+  }
+  if (typeof value === 'object' && value !== null) {
+    if ('present' in value && 'easilyAccessible' in value) {
+      return `Present: ${value.present ? 'Yes' : 'No'}, Easily Accessible: ${value.easilyAccessible ? 'Yes' : 'No'}`;
+    }
+    return JSON.stringify(value);
+  }
+  return value.toString();
+}
+
+export default TrustConversionAnalysis;
+----------------------------------------
+
+Directory: contexts
+
+File:   AnalysisContext.tsx
+
+import React, { createContext, useState, useContext, ReactNode } from 'react';
+import { AnalysisData, TrustConversionData, CopyAnalysisData, SEOAnalysisData } from '../types';
+
+interface AnalysisContextType {
+  analysisData: AnalysisData | null;
+  trustConversionData: TrustConversionData | null;
+  copyAnalysisData: CopyAnalysisData | null;
+  seoAnalysisData: SEOAnalysisData | null;
+  setAnalysisData: (data: AnalysisData | null) => void;
+  setTrustConversionData: (data: TrustConversionData | null) => void;
+  setCopyAnalysisData: (data: CopyAnalysisData | null) => void;
+  setSEOAnalysisData: (data: SEOAnalysisData | null) => void;
+}
+
+const AnalysisContext = createContext<AnalysisContextType | undefined>(undefined);
+
+export const AnalysisProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [analysisData, setAnalysisData] = useState<AnalysisData | null>(null);
+  const [trustConversionData, setTrustConversionData] = useState<TrustConversionData | null>(null);
+  const [copyAnalysisData, setCopyAnalysisData] = useState<CopyAnalysisData | null>(null);
+  const [seoAnalysisData, setSEOAnalysisData] = useState<SEOAnalysisData | null>(null);
+
+  return (
+    <AnalysisContext.Provider value={{ 
+      analysisData, 
+      trustConversionData, 
+      copyAnalysisData,
+      seoAnalysisData,
+      setAnalysisData, 
+      setTrustConversionData,
+      setCopyAnalysisData,
+      setSEOAnalysisData
+    }}>
+      {children}
+    </AnalysisContext.Provider>
+  );
+};
+
+export const useAnalysis = () => {
+  const context = useContext(AnalysisContext);
+  if (context === undefined) {
+    throw new Error('useAnalysis must be used within an AnalysisProvider');
+  }
+  return context;
+};
+----------------------------------------
+
+File: next.config.js
+
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  reactStrictMode: true,
+  swcMinify: true,
+  async headers() {
+    return [
+      {
+        // matching all API routes
+        source: "/api/:path*",
+        headers: [
+          { key: "Access-Control-Allow-Credentials", value: "true" },
+          { key: "Access-Control-Allow-Origin", value: "*" },
+          { key: "Access-Control-Allow-Methods", value: "GET,OPTIONS,PATCH,DELETE,POST,PUT" },
+          { key: "Access-Control-Allow-Headers", value: "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version" },
+        ]
+      }
+    ]
+  },
+  async rewrites() {
+    return [
+      {
+        source: '/:path*',
+        destination: '/:path*',
+      },
+    ]
+  },
+}
+
+module.exports = nextConfig
+----------------------------------------
+
+File: next-env.d.ts
+
+/// <reference types="next" />
+/// <reference types="next/image-types/global" />
+
+// NOTE: This file should not be edited
+// see https://nextjs.org/docs/basic-features/typescript for more information.
+
+----------------------------------------
+
+Directory: pages
+
+File:   _app.tsx
+
+// File: /pages/_app.tsx
+
+import '../styles/globals.css';
+import type { AppProps } from 'next/app';
+import { AnalysisProvider } from '../contexts/AnalysisContext';
+
+function MyApp({ Component, pageProps }: AppProps) {
+  return (
+    <AnalysisProvider>
+      <Component {...pageProps} />
+    </AnalysisProvider>
+  );
+}
+
+export default MyApp;
+----------------------------------------
+
+File:   copy-analysis.tsx
+
+import React from 'react';
+import Head from 'next/head';
+import Link from 'next/link';
+import Layout from '../components/Layout';
+import CopyAnalysis from '../components/CopyAnalysis';
+import { useAnalysis } from '../contexts/AnalysisContext';
+import { motion } from 'framer-motion';
+
+export default function CopyAnalysisPage() {
+  const { copyAnalysisData } = useAnalysis();
+
+  return (
+    <Layout>
+      <Head>
+        <title>Copy Analysis - CRO App</title>
+        <meta name="description" content="Detailed Copy analysis for your website" />
+      </Head>
+      {copyAnalysisData ? (
+        <CopyAnalysis data={copyAnalysisData} />
+      ) : (
+        <div className="flex justify-center pt-16 px-4">
+          <div className="bg-white rounded-lg shadow-md p-8 text-center w-full max-w-2xl">
+            <h1 className="text-2xl font-bold mb-4 text-[#3F4E82]">Copy Analysis</h1>
+            <p className="mb-6 text-gray-700">No copy analysis data available. Please run an analysis first.</p>
+            <Link href="/">
+              <motion.span 
+                className="inline-block bg-[#3F4E82] text-white px-6 py-3 rounded cursor-pointer text-lg"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                Go to Dashboard
+              </motion.span>
+            </Link>
+          </div>
+        </div>
+      )}
+    </Layout>
+  );
+}
+----------------------------------------
+
+File:   index.tsx
+
+import React, { useState } from 'react';
+import Head from 'next/head';
+import Layout from '../components/Layout';
+import AnalysisForm from '../components/AnalysisForm';
+import AnalysisAnimation from '../components/AnalysisAnimation';
+import { useAnalysis } from '../contexts/AnalysisContext';
+import { motion } from 'framer-motion';
+import { AnalysisData, TrustConversionData, CopyAnalysisData, SEOAnalysisData } from '../types';
+
+export default function Home() {
+  const { 
+    analysisData, 
+    setAnalysisData, 
+    setTrustConversionData, 
+    setCopyAnalysisData,
+    setSEOAnalysisData 
+  } = useAnalysis();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [domain, setDomain] = useState('');
+  const [websiteContent, setWebsiteContent] = useState('');
+
+  const handleAnalysis = async (inputDomain: string) => {
+    setIsLoading(true);
+    setError(null);
+    setDomain(inputDomain);
+    setAnalysisData(null);
+    setTrustConversionData(null);
+    setCopyAnalysisData(null);
+    setSEOAnalysisData(null);
+    setWebsiteContent('');
+
+    try {
+      const response = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ domain: inputDomain }),
+      });
+      const data = await response.json();
+      if (response.ok) {
+        console.log('Received analysis data:', data);
+        setAnalysisData(data.analysis);
+        setTrustConversionData(data.trustConversionData);
+        setCopyAnalysisData(data.copyAnalysisData);
+        setSEOAnalysisData(data.seoAnalysisData);
+        setWebsiteContent(data.websiteContent || '');
+      } else {
+        setError(data.error || 'An error occurred during analysis');
+      }
+    } catch (err) {
+      setError('An error occurred during analysis. Please try again.');
+      console.error('Error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <Layout websiteContent={websiteContent}>
+      <Head>
+        <title>CRO App Dashboard</title>
+        <meta name="description" content="CRO analysis tool for Micro SaaS websites" />
+      </Head>
+      <div className="space-y-8 p-6">
+        <motion.section 
+          className="bg-card p-8 rounded-lg shadow-lg"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <h1 className="text-3xl font-bold mb-6 text-primary">Dashboard</h1>
+          <div className="max-w-2xl">
+            <AnalysisForm onSubmit={handleAnalysis} isLoading={isLoading} />
+          </div>
+        </motion.section>
+
+        {error && (
+          <motion.section 
+            className="bg-accent text-white p-6 rounded-lg shadow-lg"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <p className="text-lg">{error}</p>
+          </motion.section>
+        )}
+
+        <AnalysisAnimation isAnalyzing={isLoading} domain={domain} />
+
+        {analysisData && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {Object.entries(analysisData).map(([key, value], index) => (
+              <AnalysisCard key={key} title={formatTitle(key)} data={value} />
+            ))}
+          </div>
+        )}
+      </div>
+    </Layout>
+  );
+}
+
+const AnalysisCard: React.FC<{ title: string; data: any }> = ({ title, data }) => {
+  return (
+    <motion.div 
+      className="bg-card p-6 rounded-lg shadow-lg"
+      initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <h2 className="text-2xl font-bold mb-4 text-primary">{title}</h2>
+            {['strengths', 'weaknesses', 'recommendations'].map((subKey) => (
+              <div key={subKey} className="mb-4">
+                <h3 className="text-lg font-semibold mb-2 text-accent uppercase">{subKey}</h3>
+                <ul className="list-disc list-inside space-y-1">
+                  {data[subKey].map((item, i) => (
+                    <li key={i} className="text-text">{item}</li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </motion.div>
+        );
+      }
+
+      function formatTitle(key: string): string {
+        return key.split(/(?=[A-Z])/).join(' ');
+      }
+----------------------------------------
+
+File:   page-analysis.tsx
+
+import React, { useState, useEffect } from 'react';
+import Head from 'next/head';
+import Layout from '../components/Layout';
+import PageAnalysisTable from '../components/PageAnalysisTable';
+import PageAnalysisDetail from '../components/PageAnalysisDetail';
+import { useAnalysis } from '../contexts/AnalysisContext';
+import { PageAnalysisData } from '../types';
+
+export default function PageAnalysisPage() {
+  const { seoAnalysisData } = useAnalysis();
+  const [pages, setPages] = useState<PageAnalysisData[]>([]);
+  const [selectedPage, setSelectedPage] = useState<PageAnalysisData | null>(null);
+  const [sortColumn, setSortColumn] = useState<string>('url');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [filterText, setFilterText] = useState<string>('');
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const itemsPerPage = 10;
+
+  useEffect(() => {
+    if (seoAnalysisData && seoAnalysisData.pages) {
+      setPages(seoAnalysisData.pages);
+    }
+  }, [seoAnalysisData]);
+
+  const handleSort = (column: string) => {
+    if (column === sortColumn) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortColumn(column);
+      setSortDirection('asc');
+    }
+  };
+
+  const filteredPages = pages.filter(page => 
+    page.url.toLowerCase().includes(filterText.toLowerCase()) ||
+    page.title.toLowerCase().includes(filterText.toLowerCase())
+  );
+
+  const sortedPages = filteredPages.sort((a, b) => {
+    if (a[sortColumn] < b[sortColumn]) return sortDirection === 'asc' ? -1 : 1;
+    if (a[sortColumn] > b[sortColumn]) return sortDirection === 'asc' ? 1 : -1;
+    return 0;
+  });
+
+  const paginatedPages = sortedPages.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const totalPages = Math.ceil(sortedPages.length / itemsPerPage);
+
+  return (
+    <Layout>
+      <Head>
+        <title>Page Analysis - CRO App</title>
+        <meta name="description" content="Detailed SEO analysis for individual pages and blog posts" />
+      </Head>
+      <div className="container mx-auto px-4">
+        <h1 className="text-3xl font-bold mb-6">Page Analysis</h1>
+
+        <div className="mb-4">
+          <input
+            type="text"
+            placeholder="Filter pages..."
+            value={filterText}
+            onChange={(e) => setFilterText(e.target.value)}
+            className="w-full p-2 border border-gray-300 rounded"
+          />
+        </div>
+
+        <PageAnalysisTable
+          pages={paginatedPages}
+          onSort={handleSort}
+          sortColumn={sortColumn}
+          sortDirection={sortDirection}
+          onSelectPage={setSelectedPage}
+        />
+
+        <div className="mt-4 flex justify-between items-center">
+          <button
+            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+            className="px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-300"
+          >
+            Previous
+          </button>
+          <span>Page {currentPage} of {totalPages}</span>
+          <button
+            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+            disabled={currentPage === totalPages}
+            className="px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-300"
+          >
+            Next
+          </button>
+        </div>
+
+        {selectedPage && (
+          <PageAnalysisDetail page={selectedPage} onClose={() => setSelectedPage(null)} />
+        )}
+      </div>
+    </Layout>
+  );
+}
+----------------------------------------
+
+File:   seo-analysis.tsx
+
+import React from 'react';
+import Head from 'next/head';
+import Link from 'next/link';
+import Layout from '../components/Layout';
+import SEOAnalysis from '../components/SEOAnalysis';
+import { useAnalysis } from '../contexts/AnalysisContext';
+import { motion } from 'framer-motion';
+import { ensureString } from '../utils/seoAnalyzer';
+
+export default function SEOAnalysisPage() {
+  const { seoAnalysisData } = useAnalysis();
+
+  return (
+    <Layout>
+      <Head>
+        <title>SEO Analysis - CRO App</title>
+        <meta name="description" content="Detailed SEO analysis for your website" />
+      </Head>
+      {seoAnalysisData ? (
+        <SEOAnalysis data={seoAnalysisData} />
+      ) : (
+        <div className="flex justify-center pt-16 px-4">
+          <div className="bg-white rounded-lg shadow-md p-8 text-center w-full max-w-2xl">
+            <h1 className="text-2xl font-bold mb-4 text-[#3F4E82]">SEO Analysis</h1>
+            <p className="mb-6 text-gray-700">No SEO analysis data available. Please run an analysis first.</p>
+            <Link href="/">
+              <motion.span 
+                className="inline-block bg-[#3F4E82] text-white px-6 py-3 rounded cursor-pointer text-lg"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                Go to Dashboard
+              </motion.span>
+            </Link>
+          </div>
+        </div>
+      )}
+    </Layout>
+  );
+}
+----------------------------------------
+
+File:   trust-conversion.tsx
+
+import React from 'react';
+import Head from 'next/head';
+import Link from 'next/link';
+import Layout from '../components/Layout';
+import TrustConversionAnalysis from '../components/TrustConversionAnalysis';
+import { useAnalysis } from '../contexts/AnalysisContext';
+import { motion } from 'framer-motion';
+
+export default function TrustConversionPage() {
+  const { trustConversionData } = useAnalysis();
+  return (
+    <Layout>
+      <Head>
+        <title>Trust & Conversion Analysis - CRO App</title>
+        <meta name="description" content="Detailed Trust & Conversion analysis for your website" />
+      </Head>
+      {trustConversionData ? (
+        <TrustConversionAnalysis data={trustConversionData} />
+      ) : (
+        <div className="flex justify-center pt-16 px-4">
+          <div className="bg-white rounded-lg shadow-md p-8 text-center w-full max-w-2xl">
+            <h1 className="text-2xl font-bold mb-4 text-[#3F4E82]">Trust & Conversion Analysis</h1>
+            <p className="mb-6 text-gray-700">No trust and conversion data available. Please run an analysis first.</p>
+            <Link href="/">
+              <motion.span 
+                className="inline-block bg-[#3F4E82] text-white px-6 py-3 rounded cursor-pointer text-lg"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                Go to Dashboard
+              </motion.span>
+            </Link>
+          </div>
+        </div>
+      )}
+    </Layout>
+  );
+}
+----------------------------------------
+
+File: postcss.config.js
+
+module.exports = {
+  plugins: {
+    tailwindcss: {},
+    autoprefixer: {},
+  },
+}
+
+----------------------------------------
+
+Directory: styles
+
+File:   globals.css
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-background text-text;
+}
+----------------------------------------
+
+File:   Home.module.css
+
+.container {
+  padding: 0 2rem;
+}
+
+.main {
+  min-height: 100vh;
+  padding: 4rem 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.footer {
+  display: flex;
+  flex: 1;
+  padding: 2rem 0;
+  border-top: 1px solid #eaeaea;
+  justify-content: center;
+  align-items: center;
+}
+
+.footer a {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-grow: 1;
+}
+
+.title a {
+  color: #0070f3;
+  text-decoration: none;
+}
+
+.title a:hover,
+.title a:focus,
+.title a:active {
+  text-decoration: underline;
+}
+
+.title {
+  margin: 0;
+  line-height: 1.15;
+  font-size: 4rem;
+}
+
+.title,
+.description {
+  text-align: center;
+}
+
+.description {
+  margin: 4rem 0;
+  line-height: 1.5;
+  font-size: 1.5rem;
+}
+
+.code {
+  background: #fafafa;
+  border-radius: 5px;
+  padding: 0.75rem;
+  font-size: 1.1rem;
+  font-family: Menlo, Monaco, Lucida Console, Liberation Mono, DejaVu Sans Mono,
+    Bitstream Vera Sans Mono, Courier New, monospace;
+}
+
+.grid {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  max-width: 800px;
+}
+
+.card {
+  margin: 1rem;
+  padding: 1.5rem;
+  text-align: left;
+  color: inherit;
+  text-decoration: none;
+  border: 1px solid #eaeaea;
+  border-radius: 10px;
+  transition: color 0.15s ease, border-color 0.15s ease;
+  max-width: 300px;
+}
+
+.card:hover,
+.card:focus,
+.card:active {
+  color: #0070f3;
+  border-color: #0070f3;
+}
+
+.card h2 {
+  margin: 0 0 1rem 0;
+  font-size: 1.5rem;
+}
+
+.card p {
+  margin: 0;
+  font-size: 1.25rem;
+  line-height: 1.5;
+}
+
+.logo {
+  height: 1em;
+  margin-left: 0.2rem;
+}
+
+@media (max-width: 600px) {
+  .grid {
+    width: 100%;
+    flex-direction: column;
+  }
+}
+
+----------------------------------------
+
+File: tailwind.config.js
+
+module.exports = {
+  content: [
+    './pages/**/*.{js,ts,jsx,tsx}',
+    './components/**/*.{js,ts,jsx,tsx}',
+  ],
+  theme: {
+    extend: {
+      colors: {
+        'background': '#F0F4F8',
+        'card': '#FFFFFF',
+        'primary': '#3F4E82',
+        'secondary': '#B5A5D1',
+        'text': '#2D3748',
+        'accent': '#1F5959',
+      },
+    },
+  },
+  plugins: [],
+}
+----------------------------------------
+
+Directory: utils
+
+File:   aiAnalyzer.ts
+
+import { AnalysisData } from '../types';
+import OpenAI from 'openai';
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+const MAX_RETRIES = 3;
+
+async function analyzeGroup(group: string, aspects: string[], pageContent: string): Promise<any> {
+  const prompt = `
+  Analyze the following webpage content critically and honestly for the ${aspects.join(', ')} aspects of web design, user experience, and marketing effectiveness:
+  ${pageContent}
+
+  Provide a detailed, unbiased analysis in JSON format with the following structure:
+  {
+    ${aspects.map(aspect => `"${aspect}": {
+      "strengths": [],
+      "weaknesses": [],
+      "recommendations": []
+    }`).join(',')}
+  }
+
+  Ensure your response is thorough, critical, and in valid JSON format.
+  `;
+
+  for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+    try {
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [
+          { role: "system", content: "You are a web design and marketing expert analyzing websites. Provide your analysis in valid JSON format." },
+          { role: "user", content: prompt }
+        ],
+        temperature: 0.7,
+        max_tokens: 2000,
+      });
+
+      const content = completion.choices[0].message.content;
+      if (!content) {
+        throw new Error("No content received from OpenAI");
+      }
+
+      console.log(`Raw OpenAI response for ${group}:`, content);
+
+      const jsonString = content.replace(/^```json\s*|```$/g, '').trim();
+      return JSON.parse(jsonString);
+    } catch (error) {
+      console.error(`Error in AI analysis for ${group} (attempt ${attempt + 1}):`, error);
+      if (attempt === MAX_RETRIES - 1) {
+        throw new Error(`Failed to analyze ${group} after ${MAX_RETRIES} attempts`);
+      }
+    }
+  }
+}
+
+export async function analyzeWithAI(pageContent: string): Promise<AnalysisData> {
+  const groups = [
+    { name: 'Design and Copy', aspects: ['Design', 'Copy'] },
+    { name: 'UX and CTA', aspects: ['User Experience (UX)', 'Call to Action (CTA)'] },
+    { name: 'SEO', aspects: ['SEO - On-page optimization', 'SEO - Technical aspects', 'SEO - Content quality'] },
+    { name: 'Mobile and Performance', aspects: ['Mobile responsiveness', 'Performance'] },
+    { name: 'Trust', aspects: ['Trust and Credibility'] }
+  ];
+
+  const analysisResults = await Promise.all(
+    groups.map(group => analyzeGroup(group.name, group.aspects, pageContent))
+  );
+
+  const combinedAnalysis = analysisResults.reduce((acc, result) => ({ ...acc, ...result }), {});
+
+  return combinedAnalysis as AnalysisData;
+}
+----------------------------------------
+
+File:   copyAnalyzer.ts
+
+import { CopyAnalysisData } from '../types';
+import OpenAI from 'openai';
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+export async function analyzeCopy(pageContent: string): Promise<CopyAnalysisData> {
+  console.log('Starting copy analysis...');
+  const prompt = `
+    Critically analyze the following webpage content for copy and content factors:
+    ${pageContent}
+
+    Provide a detailed, unbiased analysis in JSON format with the following structure:
+
+    {
+      "headingAnalysis": {
+        "text": string,
+        "analysis": string,
+        "isClever": boolean,
+        "addressesPainPoint": boolean,
+        "offersSolution": boolean,
+        "copywritingFramework": string | null,
+        "isBenefitOriented": boolean,
+        "effectiveness": number
+      },
+      "subheadingAnalysis": {
+        "text": string,
+        "analysis": string,
+        "supportsHeading": boolean,
+        "clarifiesValue": boolean,
+        "effectiveness": number
+      },
+      "keywordsUsage": {
+        "primaryKeyword": string,
+        "primaryKeywordUsage": boolean,
+        "primaryKeywordFrequency": number,
+        "secondaryKeywords": [string],
+        "secondaryKeywordUsage": boolean,
+        "keywordDensity": string,
+        "analysis": string,
+        "recommendations": [string]
+      },
+      "contentStructure": {
+        "properHeadingHierarchy": boolean,
+        "headingStructure": [string],
+        "paragraphLength": {
+          "average": number,
+          "longest": number,
+          "shortest": number
+        },
+        "useOfLists": boolean,
+        "numberOfLists": number,
+        "analysis": string,
+        "recommendations": [string]
+      },
+      "contentQuality": {
+        "depth": string,
+        "originality": string,
+        "relevance": string,
+        "accuracy": string,
+        "analysis": string,
+        "recommendations": [string]
+      },
+      "userIntent": {
+        "alignmentWithIntent": boolean,
+        "identifiedUserIntents": [string],
+        "addressingUserNeeds": boolean,
+        "analysis": string,
+        "recommendations": [string]
+      },
+      "callToAction": {
+        "numberOfCTAs": number,
+        "ctaLocations": [string],
+        "ctaTexts": [string],
+        "ctaColors": {
+          "buttonColor": string,
+          "textColor": string,
+          "backgroundColor": string
+        },
+        "presence": boolean,
+        "clarity": boolean,
+        "effectiveness": string,
+        "useOfAnimation": boolean,
+        "analysis": string,
+        "recommendations": [string]
+      },
+      "copywritingFramework": {
+        "identifiedFramework": string,
+        "effectiveImplementation": boolean,
+        "frameworkBreakdown": {
+          "attention": string,
+          "interest": string,
+          "desire": string,
+          "action": string
+        },
+        "analysis": string,
+        "recommendations": [string]
+      },
+      "clearCompellingMessage": {
+        "coreIdeaCommunicated": boolean,
+        "valuePropositionPresent": boolean,
+        "uniqueSellingPoints": [string],
+        "analysis": string,
+        "recommendations": [string]
+      },
+      "strongHeadline": {
+        "mainHeadline": string,
+        "subheadlines": [string],
+        "attentionGrabbing": boolean,
+        "keywordInclusion": boolean,
+        "headlineFormula": string,
+        "analysis": string,
+        "recommendations": [string]
+      },
+      "audienceUnderstanding": {
+        "targetAudienceClarity": boolean,
+        "identifiedAudiences": [string],
+        "contentRelevance": string,
+        "personalization": string,
+        "analysis": string,
+        "recommendations": [string]
+      },
+      "benefitsFocusedCopy": {
+        "benefitsHighlighted": boolean,
+        "listOfBenefits": [string],
+        "featureToBenefitRatio": string,
+        "analysis": string,
+        "recommendations": [string]
+      },
+      "readabilityAndScannability": {
+        "readabilityScore": string,
+        "averageSentenceLength": number,
+        "useOfSubheadings": boolean,
+        "bulletPoints": boolean,
+        "useOfWhitespace": string,
+        "fontChoices": {
+          "headings": string,
+          "bodyText": string
+        },
+        "analysis": string,
+        "recommendations": [string]
+      },
+      "emotionalAppeal": {
+        "useOfEmotionalTriggers": boolean,
+        "identifiedEmotions": [string],
+        "storytellingElements": boolean,
+        "analysis": string,
+        "recommendations": [string]
+      },
+      "uniqueSellingProposition": {
+        "clearUSP": boolean,
+        "uspStatement": string,
+        "uspProminent": boolean,
+        "competitiveAdvantage": string,
+        "analysis": string,
+        "recommendations": [string]
+      },
+      "grammarAndSpelling": {
+        "errorFree": boolean,
+        "identifiedErrors": [string],
+        "consistentStyle": boolean,
+        "toneOfVoice": string,
+        "analysis": string,
+        "recommendations": [string]
+      },
+      "storytellingElements": {
+        "presenceOfNarrative": boolean,
+        "storyStructure": string,
+        "charactersDeveloped": boolean,
+        "conflictResolution": boolean,
+        "effectiveUseOfStories": boolean,
+        "analysis": string,
+        "recommendations": [string]
+      },
+      "toneAndVoice": {
+        "consistentTone": boolean,
+        "identifiedTone": string,
+        "brandAlignment": boolean,
+        "formalityLevel": string,
+        "analysis": string,
+        "recommendations": [string]
+      },
+      "overallAnalysis": string,
+      "overallRecommendations": [string]
+    }
+
+    For each section:
+    1. Be thorough and specific in your analysis. Use concrete examples from the content.
+    2. Provide detailed, actionable recommendations that go beyond generic advice.
+    3. Consider industry best practices and current trends in your analysis.
+    4. Be critical where necessary, pointing out areas that need significant improvement.
+    5. Highlight both strengths and weaknesses, but focus on actionable insights.
+
+    Specific instructions for key sections:
+
+    Heading and Subheading Analysis:
+    - Analyze the main heading and subheading separately.
+    - For the heading, assess its clarity, cleverness, whether it addresses a pain point or offers a solution, and its overall effectiveness.
+    - For the subheading, evaluate how well it supports the main heading, clarifies value, and its effectiveness.
+    - Identify any copywriting frameworks used in the heading/subheading.
+
+    Call To Action (CTA):
+    - Identify and analyze each CTA separately.
+    - Comment on the wording, placement, and design of each CTA.
+    - Discuss the visual aspects including color contrast, size, and any animations.
+    - Suggest specific improvements for each CTA, including alternative wording if necessary.
+
+    Content Structure:
+    - Analyze the hierarchy and effectiveness of headings.
+    - Comment on paragraph length and its impact on readability.
+    - Discuss the use of lists, tables, or other structural elements.
+
+    Copywriting Framework:
+    - Identify the primary framework used (e.g., AIDA, PAS, FAB).
+    - Analyze how well each part of the framework is executed.
+    - Suggest improvements for each part of the framework.
+
+    Emotional Appeal and Storytelling:
+    - Identify specific emotional triggers used in the copy.
+    - Analyze any storytelling elements and their effectiveness.
+    - Suggest ways to enhance emotional connection with the audience.
+
+    Your goal is to provide a comprehensive, actionable assessment that will genuinely help improve the website's copy and content. Be thorough, critical, and ensure your response is in valid JSON format.
+  `;
+
+  try {
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        { role: "system", content: "You are a copy analysis expert analyzing websites for content effectiveness." },
+        { role: "user", content: prompt }
+      ],
+      temperature: 0.7,
+      max_tokens: 3000,
+    });
+
+    const content = completion.choices[0].message.content;
+    if (!content) {
+      throw new Error("No content received from OpenAI");
+    }
+
+    console.log("Raw OpenAI response:", content);
+
+    // Remove backticks, "json" tag, and any leading/trailing whitespace
+    const cleanedContent = content.replace(/^```json\s?/, '').replace(/\s?```$/, '').trim();
+
+    try {
+      const analysisResult: CopyAnalysisData = JSON.parse(cleanedContent);
+      console.log("Parsed copy analysis result:", analysisResult);
+      return analysisResult;
+    } catch (parseError) {
+      console.error("Error parsing OpenAI response:", parseError);
+      throw new Error("Failed to parse OpenAI response");
+    }
+  } catch (error) {
+    console.error("Error in AI analysis:", error);
+    throw error;
+  }
+}
+----------------------------------------
+
+File:   seoAnalyzer.ts
+
+import { SEOAnalysisData } from '../types';
+import OpenAI from 'openai';
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+function sanitizeJSONString(jsonString: string): string {
+  let cleaned = jsonString.trim();
+  cleaned = cleaned.replace(/^```json\s*|```$/g, '');
+
+  if (!cleaned.startsWith('{')) cleaned = '{' + cleaned;
+  if (!cleaned.endsWith('}')) cleaned += '}';
+
+  cleaned = cleaned.replace(/,(\s*[\]}])/g, '$1');
+
+  let openBraces = 0;
+  let openBrackets = 0;
+  let cleanedArray = cleaned.split('');
+
+  for (let i = 0; i < cleanedArray.length; i++) {
+    if (cleanedArray[i] === '{') openBraces++;
+    if (cleanedArray[i] === '}') openBraces--;
+    if (cleanedArray[i] === '[') openBrackets++;
+    if (cleanedArray[i] === ']') openBrackets--;
+
+    if (openBraces < 0) {
+      cleanedArray.splice(i, 1);
+      openBraces = 0;
+      i--;
+    }
+    if (openBrackets < 0) {
+      cleanedArray.splice(i, 1);
+      openBrackets = 0;
+      i--;
+    }
+  }
+
+  while (openBraces > 0) {
+    cleanedArray.push('}');
+    openBraces--;
+  }
+  while (openBrackets > 0) {
+    cleanedArray.push(']');
+    openBrackets--;
+  }
+
+  return cleanedArray.join('');
+}
+
+function getCategoryPrompt(category: string, pageContent: string, sitemapContent: string): string {
+  return `
+    As an expert SEO analyst, provide a comprehensive analysis of the following webpage HTML content and sitemap, focusing on the ${category} category:
+
+    HTML Content:
+    ${pageContent}
+
+    Sitemap Content:
+    ${sitemapContent}
+
+    Deliver a detailed, unbiased analysis in JSON format with the following structure for each factor in the ${category} category:
+    {
+      "${category}": {
+        ${getCategoryStructure(category)}
+      }
+    }
+
+    For each factor, provide:
+    1. Score: A number from 0 to 100, with a brief explanation of the scoring criteria.
+    2. Analysis: A detailed examination of the current state, at least 100 words.
+    3. Current Implementation: Specific details about how this factor is currently implemented on the site.
+    4. Specific Examples: At least 3 concrete examples from the provided HTML or sitemap.
+    5. Industry Comparison: How this implementation compares to industry standards or competitors.
+    6. Impact Assessment: A thorough explanation of how this factor affects SEO and user experience.
+    7. Recommendations: 3-5 specific, actionable suggestions for improvement, each with a detailed explanation.
+    8. Implementation Priority: Rank the importance of addressing this factor (High/Medium/Low) with justification.
+    9. Potential Challenges: Identify possible obstacles in implementing the recommendations.
+
+    Ensure each analysis is thorough, critical, and provides substantial value for improving the website's SEO. Use specific examples from the provided HTML and sitemap to support your analysis.
+
+    Your response MUST be in valid JSON format. Do not include any text outside of the JSON structure.
+  `;
+}
+
+function getCategoryStructure(category: string): string {
+  const commonStructure = `
+    "score": 0,
+    "analysis": "",
+    "recommendations": [],
+    "currentImplementation": "",
+    "specificExamples": [],
+    "industryComparison": "",
+    "impactAssessment": "",
+    "implementationPriority": "",
+    "potentialChallenges": ""
+  `;
+
+  const categoryFactors = {
+    onPageOptimization: ['keywordOptimization', 'titleTagOptimization', 'metaDescription', 'urlStructure', 'headingTags', 'contentStructure'],
+    technicalSEO: ['siteSpeed', 'mobileResponsiveness', 'xmlSitemap', 'robotsTxt', 'sslCertificate', 'structuredDataMarkup'],
+    contentQuality: ['relevanceAndValue', 'comprehensiveness', 'originality', 'freshness', 'accuracy', 'contentLength'],
+    userExperienceAndEngagement: ['readability', 'userEngagement', 'multimediaIntegration', 'pageLoadTime', 'coreWebVitals', 'callToAction'],
+    linkOptimization: ['internalLinking', 'anchorTextOptimization', 'canonicalTags', 'pagination', 'hreflangTags', 'featuredSnippetOptimization'],
+    advancedOnPageTechniques: ['imageOptimization', 'altText', 'keywordDensity', 'lsiKeywords', 'semanticRelevance', 'schemaMarkup'],
+    technicalPerformanceAndArchitecture: ['crawlBudgetOptimization', 'errorHandling', 'siteArchitecture', 'gzipCompression', 'socialMediaMetaTags', 'socialSharingPotential']
+  };
+
+  return categoryFactors[category as keyof typeof categoryFactors]
+    .map(factor => `"${factor}": {${commonStructure}}`)
+    .join(',\n');
+}
+
+async function analyzeSEOCategory(category: string, pageContent: string, sitemapContent: string): Promise<any> {
+  const prompt = getCategoryPrompt(category, pageContent, sitemapContent);
+
+  try {
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        { role: "system", content: `You are an SEO expert analyzing websites for ${category} factors. Provide your analysis in valid JSON format only.` },
+        { role: "user", content: prompt }
+      ],
+      temperature: 0.7,
+      max_tokens: 4000,
+    });
+
+    const content = completion.choices[0].message.content;
+    if (!content) {
+      throw new Error(`No content received from OpenAI for ${category}`);
+    }
+
+    console.log(`Raw OpenAI response for ${category}:`, content);
+
+    const sanitizedJsonString = sanitizeJSONString(content);
+    try {
+      const parsedJson = JSON.parse(sanitizedJsonString);
+
+      if (!parsedJson[category]) {
+        throw new Error(`Missing ${category} key in parsed JSON`);
+      }
+
+      return parsedJson;
+    } catch (parseError) {
+      console.error(`Error parsing JSON for ${category}:`, parseError);
+      console.error(`Sanitized JSON string:`, sanitizedJsonString);
+      return { [category]: { error: `Failed to parse response for ${category}` } };
+    }
+  } catch (error) {
+    console.error(`Error in AI analysis for ${category}:`, error);
+    return { [category]: { error: `Failed to analyze ${category}` } };
+  }
+}
+
+async function analyzeOverall(categories: any): Promise<any> {
+  const prompt = `
+    Based on the following SEO analysis results, provide an overall analysis and recommendations:
+
+    ${JSON.stringify(categories)}
+
+    Provide your analysis in valid JSON format with the following structure:
+    {
+      "overallAnalysis": string,
+      "overallRecommendations": [
+        {
+          "recommendation": string,
+          "priority": string,
+          "impact": string,
+          "effort": string
+        }
+      ]
+    }
+
+    The overall analysis should be at least 300 words, summarizing key findings and providing a holistic view of the site's SEO health.
+
+    Your response MUST be in valid JSON format. Do not include any text outside of the JSON structure.
+  `;
+
+  try {
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        { role: "system", content: "You are an SEO expert providing an overall analysis based on detailed category results. Provide your analysis in valid JSON format only." },
+        { role: "user", content: prompt }
+      ],
+      temperature: 0.7,
+      max_tokens: 2000,
+    });
+
+    const content = completion.choices[0].message.content;
+    if (!content) {
+      throw new Error("No content received from OpenAI for overall analysis");
+    }
+
+    console.log("Raw OpenAI response for overall analysis:", content);
+
+    const sanitizedJsonString = sanitizeJSONString(content);
+    try {
+      return JSON.parse(sanitizedJsonString);
+    } catch (parseError) {
+      console.error("Error parsing JSON for overall analysis:", parseError);
+      throw new Error(`Failed to parse OpenAI response for overall analysis: ${parseError.message}`);
+    }
+  } catch (error) {
+    console.error("Error in overall AI analysis:", error);
+    throw error;
+  }
+}
+
+export async function analyzeSEO(pageContent: string, sitemapContent: string): Promise<SEOAnalysisData> {
+  try {
+    const categories = [
+      'onPageOptimization',
+      'technicalSEO',
+      'contentQuality',
+      'userExperienceAndEngagement',
+      'linkOptimization',
+      'advancedOnPageTechniques',
+      'technicalPerformanceAndArchitecture'
+    ];
+
+    const categoryResults = await Promise.all(
+      categories.map(category => analyzeSEOCategory(category, pageContent, sitemapContent))
+    );
+
+    const categoriesObject = categories.reduce((acc, category, index) => {
+      acc[category] = categoryResults[index][category] || { error: `Failed to analyze ${category}` };
+      return acc;
+    }, {} as Record<string, any>);
+
+    const overallAnalysis = await analyzeOverall(categoriesObject);
+
+    return {
+      ...categoriesObject,
+      ...overallAnalysis,
+      sitemapContent: sitemapContent || ''
+    };
+  } catch (error) {
+    console.error("Error in SEO analysis:", error);
+    return {
+      error: "Failed to complete SEO analysis",
+      sitemapContent: sitemapContent || ''
+    } as SEOAnalysisData;
+  }
+}
+
+export function ensureString(value: any): string {
+  if (typeof value === 'string') {
+    return value;
+  }
+  if (value === null || value === undefined) {
+    return '';
+  }
+  return String(value);
+}
+
+export { sanitizeJSONString };
+----------------------------------------
+
+File:   trustConversionAnalyzer.ts
+
+import { TrustConversionData } from '../types';
+import OpenAI from 'openai';
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+export async function analyzeTrustConversion(pageContent: string): Promise<TrustConversionData> {
+  const prompt = `
+  Critically analyze the following webpage HTML content for trust and conversion factors:
+  ${pageContent}
+
+  Provide a detailed, unbiased analysis in JSON format with the following structure:
+  {
+    "documentStructure": {
+      "semanticHTML": boolean,
+      "headingStructure": boolean,
+      "analysis": string,
+      "recommendations": [string]
+    },
+    "contentElements": {
+      "valueProposition": boolean,
+      "structuredData": boolean,
+      "trustElements": boolean,
+      "analysis": string,
+      "recommendations": [string]
+    },
+    "navigation": {
+      "clearStructure": boolean,
+      "searchFunctionality": boolean,
+      "footerLinks": boolean,
+      "analysis": string,
+      "recommendations": [string]
+    },
+    "forms": {
+      "count": number,
+      "validationAttributes": boolean,
+      "clearLabels": boolean,
+      "securityIndicators": boolean,
+      "analysis": string,
+      "recommendations": [string]
+    },
+    "ctaElements": {
+      "count": number,
+      "actionOrientedText": boolean,
+      "strategicPlacement": boolean,
+      "analysis": string,
+      "recommendations": [string]
+    },
+    "socialProof": {
+      "testimonials": boolean,
+      "socialMediaIntegration": boolean,
+      "customerReferences": boolean,
+      "analysis": string,
+      "recommendations": [string]
+    },
+    "trustSignals": {
+      "securityBadges": boolean,
+      "certifications": boolean,
+      "affiliations": boolean,
+      "analysis": string,
+      "recommendations": [string]
+    },
+    "credibilityIndicators": {
+      "aboutSection": boolean,
+      "companyHistory": boolean,
+      "professionalAccreditations": boolean,
+      "analysis": string,
+      "recommendations": [string]
+    },
+    "accessibilityUsability": {
+      "ariaAttributes": boolean,
+      "imageAltText": boolean,
+      "colorContrast": boolean,
+      "analysis": string,
+      "recommendations": [string]
+    },
+    "mobileOptimization": {
+      "responsiveDesign": boolean,
+      "analysis": string,
+      "recommendations": [string]
+    },
+    "legalCompliance": {
+      "privacyPolicy": {
+        "present": boolean,
+        "easilyAccessible": boolean
+      },
+      "termsOfService": {
+        "present": boolean,
+        "easilyAccessible": boolean
+      },
+      "cookieConsent": boolean,
+      "analysis": string,
+      "recommendations": [string]
+    },
+    "valueProposition": {
+      "clearBenefits": boolean,
+      "uniqueSellingPoints": boolean,
+      "analysis": string,
+      "recommendations": [string]
+    },
+    "riskReduction": {
+      "guarantees": boolean,
+      "clearPricing": boolean,
+      "shippingInfo": boolean,
+      "analysis": string,
+      "recommendations": [string]
+    },
+    "contactInformation": {
+      "physicalAddress": boolean,
+      "phoneNumber": boolean,
+      "emailAddress": boolean,
+      "contactForm": boolean,
+      "analysis": string,
+      "recommendations": [string]
+    },
+    "customerSupport": {
+      "liveChatAvailable": boolean,
+      "chatbotAvailable": boolean,
+      "supportHoursListed": boolean,
+      "faqSection": boolean,
+      "analysis": string,
+      "recommendations": [string]
+    },
+    "checkoutProcess": {
+      "steps": number,
+      "guestCheckout": boolean,
+      "securePayment": boolean,
+      "analysis": string,
+      "recommendations": [string]
+    },
+    "overallAnalysis": string,
+    "overallRecommendations": [string]
+  }
+
+  For each section:
+  1. Be brutally honest in identifying issues and areas for improvement.
+  2. Don't assume quality without clear evidence in the HTML.
+  3. Provide specific, actionable recommendations for improvement in the 'recommendations' array.
+  4. If a particular aspect is poorly implemented or missing, state it clearly.
+  5. Consider industry standards and best practices in your analysis.
+  6. Don't hesitate to point out if the website fails to meet basic professional standards for trust and conversion.
+  7. If claims made in the content are contradicted by the implementation, highlight this discrepancy.
+  8. For boolean fields, only mark as true if the feature is properly implemented and effective.
+  9. In the 'analysis' fields, provide detailed explanations, including specific examples from the HTML content.
+  10. Highlight both positive and negative aspects, but lean towards critical analysis to drive improvement.
+  11. Ensure that each 'recommendations' array contains at least 2-3 specific, actionable suggestions.
+
+  Pay special attention to:
+  - The presence and accessibility of Privacy Policy and Terms of Service pages.
+  - The availability and prominence of contact information.
+  - The presence of customer support features like live chat or chatbots.
+  - The overall transparency and professionalism conveyed through these trust elements.
+
+  Ensure your response is thorough, critical, and in valid JSON format. Your goal is to provide a realistic assessment that will genuinely help improve the website's trust factors and conversion potential.
+  `;
+
+  try {
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        { role: "system", content: "You are a CRO expert analyzing websites for trust and conversion factors. Your analysis should be detailed, critical, and actionable." },
+        { role: "user", content: prompt }
+      ],
+      temperature: 0.7,
+      max_tokens: 4000,
+    });
+
+    const content = completion.choices[0].message.content;
+    if (!content) {
+      throw new Error("No content received from OpenAI");
+    }
+
+    console.log("Raw OpenAI response:", content);
+
+    const jsonString = content.replace(/^```json\s*|```$/g, '').trim();
+
+    try {
+      const analysisResult: TrustConversionData = JSON.parse(jsonString);
+      return analysisResult;
+    } catch (parseError) {
+      console.error("Error parsing OpenAI response:", parseError);
+      throw new Error("Failed to parse OpenAI response: " + parseError.message);
+    }
+  } catch (error) {
+    console.error("Error in AI analysis:", error);
+    throw error;
+  }
+}
+----------------------------------------
+
