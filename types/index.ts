@@ -264,115 +264,37 @@ export interface PageAnalysisData {
 
 export interface SEOAnalysisData {
   onPageOptimization: {
-    keywords: {
-      primaryKeyword: string;
-      secondaryKeywords: string[];
-      keywordDensity: string;
-      analysis: string;
-      recommendations: string[];
-    };
-    titleTag: {
-      content: string;
-      length: number;
-      includesPrimaryKeyword: boolean;
-      analysis: string;
-      recommendations: string[];
-    };
-    metaDescription: {
-      content: string;
-      length: number;
-      includesPrimaryKeyword: boolean;
-      analysis: string;
-      recommendations: string[];
-    };
-    headings: {
-      h1: {
-        count: number;
-        content: string;
-        includesPrimaryKeyword: boolean;
-      };
-      h2: {
-        count: number;
-        content: string[];
-      };
-      analysis: string;
-      recommendations: string[];
-    };
-    contentStructure: {
-      paragraphCount: number;
-      averageParagraphLength: number;
-      useOfLists: boolean;
-      analysis: string;
-      recommendations: string[];
-    };
-    internalLinking: {
-      count: number;
-      analysis: string;
-      recommendations: string[];
-    };
-    imageOptimization: {
-      imagesWithAltText: number;
-      totalImages: number;
-      analysis: string;
-      recommendations: string[];
-    };
+    keywordOptimization: SEOSubcategory;
+    contentStructure: SEOSubcategory;
+    metaInformation: SEOSubcategory;
+    urlAndInternalLinking: SEOSubcategory;
+    visualElementOptimization: SEOSubcategory;
+    schemaAndStructuredData: SEOSubcategory;
   };
   technicalAspects: {
-    siteSpeed: {
-      analysis: string;
-      recommendations: string[];
-    };
-    mobileResponsiveness: {
-      isResponsive: boolean;
-      analysis: string;
-      recommendations: string[];
-    };
-    sitemapQuality: {
-      pageCount: number;
-      lastModified: string;
-      analysis: string;
-      recommendations: string[];
-    };
-    sslCertificate: {
-      present: boolean;
-      analysis: string;
-      recommendations: string[];
-    };
-    structuredData: {
-      present: boolean;
-      types: string[];
-      analysis: string;
-      recommendations: string[];
-    };
-    canonicalTags: {
-      present: boolean;
-      analysis: string;
-      recommendations: string[];
-    };
+    sitePerformance: SEOSubcategory;
+    mobileOptimization: SEOSubcategory;
+    indexingAndCrawlability: SEOSubcategory;
+    securityAndErrorHandling: SEOSubcategory;
+    internationalSEO: SEOSubcategory;
+    technicalInfrastructure: SEOSubcategory;
   };
   contentQuality: {
-    relevance: {
-      score: number;
-      analysis: string;
-      recommendations: string[];
-    };
-    comprehensiveness: {
-      wordCount: number;
-      topicCoverage: string;
-      analysis: string;
-      recommendations: string[];
-    };
-    readability: {
-      score: number;
-      analysis: string;
-      recommendations: string[];
-    };
-    engagement: {
-      analysis: string;
-      recommendations: string[];
-    };
+    contentRelevanceAndDepth: SEOSubcategory;
+    contentFreshnessAndOriginality: SEOSubcategory;
+    accuracyAndExpertise: SEOSubcategory;
+    readabilityAndEngagement: SEOSubcategory;
+    multimediaAndFormatting: SEOSubcategory;
+    userExperienceAndSharing: SEOSubcategory;
   };
   overallAnalysis: string;
   overallRecommendations: string[];
-  pages: PageAnalysisData[];
+}
+
+interface SEOSubcategory {
+  aspectsCovered: string[];
+  analysis: string;
+  strengths: string[];
+  weaknesses: string[];
+  recommendations: string[];
 }

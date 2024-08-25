@@ -1,3 +1,5 @@
+// File: components/SEOAnalysis.tsx
+
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SEOAnalysisData } from '../types';
@@ -87,6 +89,7 @@ const AnalysisCard: React.FC<{ title: string; data: any; onShowDetails: () => vo
       transition={{ type: 'spring', stiffness: 300, damping: 10 }}
     >
       <h3 className="text-xl font-semibold mb-4 text-primary">{title}</h3>
+      <p className="text-sm text-gray-600 mb-4">Aspects covered: {data.aspectsCovered.join(', ')}</p>
       <motion.button
         className="mt-4 bg-secondary text-white px-4 py-2 rounded-md hover:bg-primary transition-colors duration-300 w-full"
         whileHover={{ scale: 1.03 }}
@@ -113,62 +116,84 @@ const AnalysisPopup: React.FC<{ data: any; title: string; onClose: () => void }>
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.9, opacity: 0 }}
         transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-        className="bg-card p-8 rounded-lg shadow-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto m-4"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <h2 className="text-2xl font-bold mb-6 text-primary">{title}</h2>
-        <FactorDetails data={data} />
-        <motion.button
-          className="mt-6 bg-secondary text-white px-4 py-2 rounded-md hover:bg-primary transition-colors duration-300"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={onClose}
-        >
-          Close
-        </motion.button>
-      </motion.div>
-    </motion.div>
-  );
-};
+                className="bg-card p-8 rounded-lg shadow-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto m-4"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <h2 className="text-2xl font-bold mb-6 text-primary">{title}</h2>
+                <FactorDetails data={data} />
+                <motion.button
+                  className="mt-6 bg-secondary text-white px-4 py-2 rounded-md hover:bg-primary transition-colors duration-300"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={onClose}
+                >
+                  Close
+                </motion.button>
+              </motion.div>
+            </motion.div>
+          );
+        };
 
-const FactorDetails: React.FC<{ data: any }> = ({ data }) => {
-  return (
-    <div className="space-y-4">
-      {Object.entries(data).map(([key, value]) => (
-        <div key={key}>
-          <h4 className="font-semibold text-accent">{formatTitle(key)}:</h4>
-          {Array.isArray(value) ? (
-            <ul className="list-disc list-inside text-text">
-              {value.map((item, index) => (
-                <li key={index}>{item}</li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-text">{value.toString()}</p>
-          )}
-        </div>
-      ))}
-    </div>
-  );
-};
+        const FactorDetails: React.FC<{ data: any }> = ({ data }) => {
+          return (
+            <div className="space-y-6">
+              <div>
+                <h4 className="font-semibold text-accent mb-2">Aspects Covered:</h4>
+                <ul className="list-disc list-inside text-text">
+                  {data.aspectsCovered.map((aspect, index) => (
+                    <li key={index}>{aspect}</li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <h4 className="font-semibold text-accent mb-2">Analysis:</h4>
+                <p className="text-text">{data.analysis}</p>
+              </div>
+              <div>
+                <h4 className="font-semibold text-accent mb-2">Strengths:</h4>
+                <ul className="list-disc list-inside text-text">
+                  {data.strengths.map((strength, index) => (
+                    <li key={index}>{strength}</li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <h4 className="font-semibold text-accent mb-2">Weaknesses:</h4>
+                <ul className="list-disc list-inside text-text">
+                  {data.weaknesses.map((weakness, index) => (
+                    <li key={index}>{weakness}</li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <h4 className="font-semibold text-accent mb-2">Recommendations:</h4>
+                <ul className="list-disc list-inside text-text">
+                  {data.recommendations.map((recommendation, index) => (
+                    <li key={index}>{recommendation}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          );
+        };
 
-const OverallAnalysis: React.FC<{ overallAnalysis: string; overallRecommendations: string[] }> = ({ overallAnalysis, overallRecommendations }) => (
-  <div className="bg-slate rounded-lg shadow-md overflow-hidden mt-8">
-    <h2 className="text-2xl font-semibold p-4 bg-umber text-oatmeal">Overall Analysis</h2>
-    <div className="p-6 space-y-4">
-      <p className="text-oatmeal">{overallAnalysis}</p>
-      <h3 className="text-xl font-semibold text-coral">Recommendations</h3>
-      <ul className="list-disc list-inside text-oatmeal">
-        {overallRecommendations.map((recommendation, index) => (
-          <li key={index} className="mb-2">{recommendation}</li>
-        ))}
-      </ul>
-    </div>
-  </div>
-);
+        const OverallAnalysis: React.FC<{ overallAnalysis: string; overallRecommendations: string[] }> = ({ overallAnalysis, overallRecommendations }) => (
+          <div className="bg-slate rounded-lg shadow-md overflow-hidden mt-8">
+            <h2 className="text-2xl font-semibold p-4 bg-umber text-oatmeal">Overall Analysis</h2>
+            <div className="p-6 space-y-4">
+              <p className="text-oatmeal">{overallAnalysis}</p>
+              <h3 className="text-xl font-semibold text-coral">Recommendations</h3>
+              <ul className="list-disc list-inside text-oatmeal">
+                {overallRecommendations.map((recommendation, index) => (
+                  <li key={index} className="mb-2">{recommendation}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        );
 
-function formatTitle(key: string): string {
-  return key.split(/(?=[A-Z])/).join(' ');
-}
+        function formatTitle(key: string): string {
+          return key.split(/(?=[A-Z])/).join(' ');
+        }
 
-export default SEOAnalysis;
+        export default SEOAnalysis;

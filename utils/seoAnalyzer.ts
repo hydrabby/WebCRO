@@ -1,3 +1,5 @@
+// File: utils/seoAnalyzer.ts
+
 import { SEOAnalysisData } from '../types';
 import OpenAI from 'openai';
 
@@ -18,111 +20,205 @@ export async function analyzeSEO(pageContent: string, sitemapContent: string): P
     Provide a detailed, unbiased analysis in JSON format with the following structure:
     {
       "onPageOptimization": {
-        "keywords": {
-          "primaryKeyword": string,
-          "secondaryKeywords": [string],
-          "keywordDensity": string,
+        "keywordOptimization": {
+          "aspectsCovered": [
+            "Keyword research and selection",
+            "Keyword density",
+            "LSI (Latent Semantic Indexing) keywords"
+          ],
           "analysis": string,
-          "recommendations": [string]
-        },
-        "titleTag": {
-          "content": string,
-          "length": number,
-          "includesPrimaryKeyword": boolean,
-          "analysis": string,
-          "recommendations": [string]
-        },
-        "metaDescription": {
-          "content": string,
-          "length": number,
-          "includesPrimaryKeyword": boolean,
-          "analysis": string,
-          "recommendations": [string]
-        },
-        "headings": {
-          "h1": {
-            "count": number,
-            "content": string,
-            "includesPrimaryKeyword": boolean
-          },
-          "h2": {
-            "count": number,
-            "content": [string]
-          },
-          "analysis": string,
+          "strengths": [string],
+          "weaknesses": [string],
           "recommendations": [string]
         },
         "contentStructure": {
-          "paragraphCount": number,
-          "averageParagraphLength": number,
-          "useOfLists": boolean,
+          "aspectsCovered": [
+            "Heading tags (H1, H2, etc.)",
+            "Content organization",
+            "Featured snippet optimization"
+          ],
           "analysis": string,
+          "strengths": [string],
+          "weaknesses": [string],
           "recommendations": [string]
         },
-        "internalLinking": {
-          "count": number,
+        "metaInformation": {
+          "aspectsCovered": [
+            "Title tag optimization",
+            "Meta descriptions",
+            "Social media meta tags"
+          ],
           "analysis": string,
+          "strengths": [string],
+          "weaknesses": [string],
           "recommendations": [string]
         },
-        "imageOptimization": {
-          "imagesWithAltText": number,
-          "totalImages": number,
+        "urlAndInternalLinking": {
+          "aspectsCovered": [
+            "URL structure",
+            "Internal linking strategy",
+            "Anchor text optimization"
+          ],
           "analysis": string,
+          "strengths": [string],
+          "weaknesses": [string],
+          "recommendations": [string]
+        },
+        "visualElementOptimization": {
+          "aspectsCovered": [
+            "Image optimization",
+            "Alt text for images",
+            "Multimedia integration"
+          ],
+          "analysis": string,
+          "strengths": [string],
+          "weaknesses": [string],
+          "recommendations": [string]
+        },
+        "schemaAndStructuredData": {
+          "aspectsCovered": [
+            "Schema markup implementation",
+            "Structured data for rich snippets",
+            "Microdata usage"
+          ],
+          "analysis": string,
+          "strengths": [string],
+          "weaknesses": [string],
           "recommendations": [string]
         }
       },
       "technicalAspects": {
-        "siteSpeed": {
+        "sitePerformance": {
+          "aspectsCovered": [
+            "Site speed optimization",
+            "Page load time",
+            "Core Web Vitals"
+          ],
           "analysis": string,
+          "strengths": [string],
+          "weaknesses": [string],
           "recommendations": [string]
         },
-        "mobileResponsiveness": {
-          "isResponsive": boolean,
+        "mobileOptimization": {
+          "aspectsCovered": [
+            "Mobile responsiveness",
+            "Mobile-first indexing considerations"
+          ],
           "analysis": string,
+          "strengths": [string],
+          "weaknesses": [string],
           "recommendations": [string]
         },
-        "sitemapQuality": {
-          "pageCount": number,
-          "lastModified": string,
+        "indexingAndCrawlability": {
+          "aspectsCovered": [
+            "XML sitemap",
+            "Robots.txt configuration",
+            "Crawl budget optimization"
+          ],
           "analysis": string,
+          "strengths": [string],
+          "weaknesses": [string],
           "recommendations": [string]
         },
-        "sslCertificate": {
-          "present": boolean,
+        "securityAndErrorHandling": {
+          "aspectsCovered": [
+            "SSL certificate implementation",
+            "Error page handling (404, 500, etc.)",
+            "Security protocols"
+          ],
           "analysis": string,
+          "strengths": [string],
+          "weaknesses": [string],
           "recommendations": [string]
         },
-        "structuredData": {
-          "present": boolean,
-          "types": [string],
+        "internationalSEO": {
+          "aspectsCovered": [
+            "Hreflang tags",
+            "Canonical tags",
+            "Geotargeting considerations"
+          ],
           "analysis": string,
+          "strengths": [string],
+          "weaknesses": [string],
           "recommendations": [string]
         },
-        "canonicalTags": {
-          "present": boolean,
+        "technicalInfrastructure": {
+          "aspectsCovered": [
+            "Site architecture",
+            "Pagination handling",
+            "Gzip compression"
+          ],
           "analysis": string,
+          "strengths": [string],
+          "weaknesses": [string],
           "recommendations": [string]
         }
       },
       "contentQuality": {
-        "relevance": {
-          "score": number,
+        "contentRelevanceAndDepth": {
+          "aspectsCovered": [
+            "Relevance to target audience",
+            "Comprehensiveness of coverage",
+            "Content length and depth"
+          ],
           "analysis": string,
+          "strengths": [string],
+          "weaknesses": [string],
           "recommendations": [string]
         },
-        "comprehensiveness": {
-          "wordCount": number,
-          "topicCoverage": string,
+        "contentFreshnessAndOriginality": {
+          "aspectsCovered": [
+            "Content update frequency",
+            "Originality of content",
+            "Unique value proposition"
+          ],
           "analysis": string,
+          "strengths": [string],
+          "weaknesses": [string],
           "recommendations": [string]
         },
-        "readability": {
-          "score": number,
+        "accuracyAndExpertise": {
+          "aspectsCovered": [
+            "Factual accuracy",
+            "Demonstration of expertise",
+            "Authority and trustworthiness"
+          ],
           "analysis": string,
+          "strengths": [string],
+          "weaknesses": [string],
           "recommendations": [string]
         },
-        "engagement": {
+        "readabilityAndEngagement": {
+          "aspectsCovered": [
+            "Readability score",
+            "User engagement metrics",
+            "Call-to-action effectiveness"
+          ],
           "analysis": string,
+          "strengths": [string],
+          "weaknesses": [string],
+          "recommendations": [string]
+        },
+        "multimediaAndFormatting": {
+          "aspectsCovered": [
+            "Use of images, videos, infographics",
+            "Content formatting and structure",
+            "Visual appeal"
+          ],
+          "analysis": string,
+          "strengths": [string],
+          "weaknesses": [string],
+          "recommendations": [string]
+        },
+        "userExperienceAndSharing": {
+          "aspectsCovered": [
+            "Overall user experience",
+            "Social sharing potential",
+            "Semantic relevance and context"
+          ],
+          "analysis": string,
+          "strengths": [string],
+          "weaknesses": [string],
           "recommendations": [string]
         }
       },
@@ -130,13 +226,19 @@ export async function analyzeSEO(pageContent: string, sitemapContent: string): P
       "overallRecommendations": [string]
     }
 
-    For each section:
-    1. Provide a thorough analysis based on SEO best practices.
-    2. Offer specific, actionable recommendations for improvement.
-    3. Be critical and honest in identifying issues and areas for improvement.
-    4. Provide detailed explanations in the 'analysis' fields, including specific examples from the content.
+    For each subcategory:
+    1. Provide a thorough analysis based on SEO best practices, considering the aspects covered.
+    2. Identify clear strengths in the current implementation.
+    3. Highlight specific weaknesses or areas for improvement.
+    4. Offer specific, actionable recommendations for improvement.
+    5. Be critical and honest in identifying issues and areas for improvement.
+    6. Provide detailed explanations in the 'analysis' fields, including specific examples from the content.
 
-    Ensure your response is thorough, critical, and in valid JSON format. Your goal is to provide a comprehensive assessment that will genuinely help improve the website's SEO.
+    In the overall analysis and recommendations:
+    1. Summarize the key findings across all categories.
+    2. Prioritize the most important recommendations that will have the biggest impact on SEO.
+
+    Ensure your response is thorough, critical, and in valid JSON format. Your goal is to provide a comprehensive assessment that will genuinely help improve the website's SEO across all aspects analyzed.
   `;
 
   try {
