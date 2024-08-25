@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface Props {
@@ -16,24 +16,26 @@ const AnalysisAnimation: React.FC<Props> = ({ isAnalyzing, domain }) => {
     'Analyzing with AI...',
   ];
 
-  useEffect(() => {
-    if (isAnalyzing) {
-      const interval = setInterval(() => {
-        setCurrentStepIndex((prevIndex) => {
-          if (prevIndex < steps.length - 1) {
-            return prevIndex + 1;
-          } else {
-            clearInterval(interval);
-            return prevIndex;
-          }
-        });
-      }, 2000); // Change step every 2 seconds
+  const advanceStep = useCallback(() => {
+    setCurrentStepIndex((prevIndex) => 
+      prevIndex < steps.length - 1 ? prevIndex + 1 : prevIndex
+    );
+  }, [steps.length]);
 
-      return () => clearInterval(interval);
+  useEffect(() => {
+    let intervalId: NodeJS.Timeout | null = null;
+
+    if (isAnalyzing) {
+      setCurrentStepIndex(0);
+      intervalId = setInterval(advanceStep, 2000);
     } else {
       setCurrentStepIndex(0);
     }
-  }, [isAnalyzing, steps.length]);
+
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [isAnalyzing, advanceStep]);
 
   if (!isAnalyzing) return null;
 
