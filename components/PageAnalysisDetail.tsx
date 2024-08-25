@@ -1,6 +1,5 @@
 import React from 'react';
 import { PageAnalysisData } from '../types';
-import { motion } from 'framer-motion';
 
 interface Props {
   page: PageAnalysisData;
@@ -9,18 +8,8 @@ interface Props {
 
 const PageAnalysisDetail: React.FC<Props> = ({ page, onClose }) => {
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-    >
-      <motion.div
-        initial={{ y: 50, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        exit={{ y: 50, opacity: 0 }}
-        className="bg-white p-6 rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto"
-      >
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+      <div className="bg-white p-6 rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto">
         <h2 className="text-2xl font-bold mb-4">{page.title}</h2>
         <p className="mb-4">{page.url}</p>
 
@@ -55,12 +44,12 @@ const PageAnalysisDetail: React.FC<Props> = ({ page, onClose }) => {
 
         <button 
           onClick={onClose}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+          className="px-4 py-2 bg-blue-500 text-white rounded"
         >
           Close
         </button>
-      </motion.div>
-    </motion.div>
+      </div>
+    </div>
   );
 };
 

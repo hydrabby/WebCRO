@@ -254,7 +254,7 @@ export interface PageAnalysisData {
   h1: string;
   keywordUsage: string;
   wordCount: number;
-  readabilityScore: string;
+  readabilityScore: number;
   contentQuality: string;
   loadTime: string;
   mobileFriendly: boolean;
@@ -263,37 +263,116 @@ export interface PageAnalysisData {
 }
 
 export interface SEOAnalysisData {
-  onPageOptimization: CategoryData;
-  userExperienceAndEngagement: CategoryData;
-  contentQuality: CategoryData;
-  linkOptimization: CategoryData;
-  technicalSEO: CategoryData;
-  advancedOnPageTechniques: CategoryData;
-  technicalPerformanceAndArchitecture: CategoryData;
+  onPageOptimization: {
+    keywords: {
+      primaryKeyword: string;
+      secondaryKeywords: string[];
+      keywordDensity: string;
+      analysis: string;
+      recommendations: string[];
+    };
+    titleTag: {
+      content: string;
+      length: number;
+      includesPrimaryKeyword: boolean;
+      analysis: string;
+      recommendations: string[];
+    };
+    metaDescription: {
+      content: string;
+      length: number;
+      includesPrimaryKeyword: boolean;
+      analysis: string;
+      recommendations: string[];
+    };
+    headings: {
+      h1: {
+        count: number;
+        content: string;
+        includesPrimaryKeyword: boolean;
+      };
+      h2: {
+        count: number;
+        content: string[];
+      };
+      analysis: string;
+      recommendations: string[];
+    };
+    contentStructure: {
+      paragraphCount: number;
+      averageParagraphLength: number;
+      useOfLists: boolean;
+      analysis: string;
+      recommendations: string[];
+    };
+    internalLinking: {
+      count: number;
+      analysis: string;
+      recommendations: string[];
+    };
+    imageOptimization: {
+      imagesWithAltText: number;
+      totalImages: number;
+      analysis: string;
+      recommendations: string[];
+    };
+  };
+  technicalAspects: {
+    siteSpeed: {
+      analysis: string;
+      recommendations: string[];
+    };
+    mobileResponsiveness: {
+      isResponsive: boolean;
+      analysis: string;
+      recommendations: string[];
+    };
+    sitemapQuality: {
+      pageCount: number;
+      lastModified: string;
+      analysis: string;
+      recommendations: string[];
+    };
+    sslCertificate: {
+      present: boolean;
+      analysis: string;
+      recommendations: string[];
+    };
+    structuredData: {
+      present: boolean;
+      types: string[];
+      analysis: string;
+      recommendations: string[];
+    };
+    canonicalTags: {
+      present: boolean;
+      analysis: string;
+      recommendations: string[];
+    };
+  };
+  contentQuality: {
+    relevance: {
+      score: number;
+      analysis: string;
+      recommendations: string[];
+    };
+    comprehensiveness: {
+      wordCount: number;
+      topicCoverage: string;
+      analysis: string;
+      recommendations: string[];
+    };
+    readability: {
+      score: number;
+      analysis: string;
+      recommendations: string[];
+    };
+    engagement: {
+      analysis: string;
+      recommendations: string[];
+    };
+  };
   overallAnalysis: string;
-  overallRecommendations: Recommendation[];
-  error?: string;
-}
-
-interface CategoryData {
-  [key: string]: FactorData;
-}
-
-interface FactorData {
-  score: number;
-  analysis: string;
-  recommendations: string[];
-  currentImplementation: string;
-  specificExamples: string[];
-  industryComparison: string;
-  impactAssessment: string;
-  implementationPriority: string;
-  potentialChallenges: string;
-}
-
-interface Recommendation {
-  recommendation: string;
-  priority: string;
-  impact: string;
-  effort: string;
+  overallRecommendations: string[];
+  pages: PageAnalysisData[];
 }
